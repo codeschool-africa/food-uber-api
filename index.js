@@ -1,17 +1,25 @@
+const express = require("express")
+
 const path = require("path")
 
 const bodyParser = require("body-parser");
 
+const cors = require("cors")
+
 const db = require("./src/models/db")
 
-const app = require("express")()
+const app = express()
 
-const {register, login} = require("./src/routes/user")
-
-const {getProducts, getProductsBySeller, getSingleProduct, addProduct} = require("./src/routes/products")
+const router = require("./src/routes/routes")
 
 // parse requests of content-type: application/json
 app.use(bodyParser.json());
+
+//cors handling
+app.use(cors())
+
+//initializing the router
+app.use("/api", router)
 
 // parse requests of content-type: application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -21,7 +29,7 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "views", "index.html"))
 });
 
-// create a database, when running this route, mae sure you comment the database name in mysql.createConnection method
+// create a database, when running this route, make sure you comment the database name in mysql.createConnection method
 app.get("/createdb", (req, res) => {
   let sql = "Create database foodUber"
 
@@ -33,7 +41,7 @@ app.get("/createdb", (req, res) => {
 
 // create seller table
 app.get("/createCustomerTable", (req, res) => {
-  let sql = "Create table customers(id varchar(36) Primary key, firstName varchar(255), lastName varchar(255), email varchar(255), tel varchar(255), location varchar(255), password varchar(255) )"
+  let sql = "Create table customers(id varchar(36) Primary key, name varchar(255), email varchar(255), tel varchar(255), password varchar(255) )"
 
   db.query(sql, (err, result) => {
     if (err) throw err
@@ -43,27 +51,13 @@ app.get("/createCustomerTable", (req, res) => {
 
 // create seller table
 app.get("/createAdminsTable", (req, res) => {
-  let sql = "Create table admin(id varchar(36) Primary key, firstName varchar(255), lastName varchar(255), email varchar(255), tel varchar(255), location varchar(255), password varchar(255) )"
+  let sql = "Create table admin(id varchar(36) Primary key, name varchar(255), email varchar(255), tel varchar(255), password varchar(255) )"
 
   db.query(sql, (err, result) => {
     if (err) throw err
     res.json(result)
   })
 })
-
-//creating users
-app.post("/register", register)
-
-//login
-app.post("/login", login)
-
-app.post("/addProduct", addProduct)
-
-app.get("/products", getProducts)
-
-app.get("/products/:productId", getSingleProduct)
-
-app.get("/products/:sellerId", getProductsBySeller)
 
 const PORT = process.env.PORT || 5000
 
