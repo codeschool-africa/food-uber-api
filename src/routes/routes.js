@@ -3,15 +3,13 @@ const express = require("express")
 const router = express.Router()
 
 //routes
-const { register} = require("../controllers/user")
+const { register, login} = require("../controllers/user")
 
 //route to register both admin and customer
 router.post("/register", register)
 
 //route to login both admin and customers
-router.post("/login", (req, res) => {
-    res.json({msg: "Login"})
-})
+router.post("/login", login)
 
 //admin adds food
 router.post("/add-food", (req, res) => {
