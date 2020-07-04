@@ -1,6 +1,6 @@
 const bcrypt = require( "bcryptjs" )
 
-const { body, validationResult } = require( 'express-validator' );
+const { validationResult } = require( 'express-validator' );
 
 const db = require( "../models/db" )
 
@@ -11,70 +11,70 @@ exports.register = async ( req, res ) => {
 
     const { name, email, tel, password } = req.body
 
-    //validate user data
-    //todo
+    const errors = validationResult( req )
 
     //hashes password
     let hashedpassword = await bcrypt.hash( password, salt );
 
-    let emailCheck = "SELECT email from customers where email = '" + email + "'"
-    let telCheck = "SELECT * from customers where tel = '" + tel + "'"
+    let createdAt = new Date()
 
-    //checks if email exists
-    db.query( emailCheck, ( err, results ) => {
-        if ( err ) throw err
-        if ( results.length > 0 ) {
-            res.status( 400 ).json( { error: "email address already in use" } )
-        }
-        else {
-            // checks if telephone exists
-            db.query( telCheck, ( err, result ) => {
-                if ( err ) throw err
-                if ( result.length > 0 ) {
-                    res.status( 400 ).json( { error: "telephone number already in use" } )
-                } else {
-                    // registering user 
-                    if ( email === "" ) {
-                        //add main admin
-                        let sql = "INSERT INTO `admin` values (uuid(),?,?,?,?)"
-                        db.query( sql, [name, email, tel, hashedpassword], ( err, result ) => {
-                            if ( err ) throw err
-                            res.json( { result, msg: "admin" } )
-                        } )
+    let emailCheck = "SELECT email from users where email = '" + email + "'"
+    let telCheck = "SELECT * from users where tel = '" + tel + "'"
+
+    if ( !errors.isEmpty() ) {
+        res.json( { errors: errors.array() } )
+    }
+    else {
+        //checks if email exists
+        db.query( emailCheck, ( err, results ) => {
+            if ( err ) throw err
+            if ( results.length > 0 ) {
+                res.status( 400 ).json( { error: "email address already in use" } )
+            }
+            else {
+                // checks if telephone exists
+                db.query( telCheck, ( err, result ) => {
+                    if ( err ) throw err
+                    if ( result.length > 0 ) {
+                        res.status( 400 ).json( { error: "telephone number already in use" } )
                     } else {
                         //add normal user
-                        let sql = "INSERT INTO `customers` values (uuid(),?,?,?,?)"
-                        db.query( sql, [name, email, tel, hashedpassword], ( err, result ) => {
+                        let sql = `INSERT INTO users values (uuid(),?,?,?,?, null,?)`
+                        db.query( sql, [name, email, tel, hashedpassword, createdAt], ( err, result ) => {
                             if ( err ) throw err
                             res.json( { result, msg: "not an admin" } )
                         } )
-                    }
-                }
-            } )
-        }
-    } )
 
+                    }
+                } )
+            }
+        } )
+    }
 }
 
 //login customer with telephone or email
-exports.login = ( req, res ) => {
+exports.login = async ( req, res ) => {
     let { email, password } = req.body
-    let sql = "SELECT email from customers where email = '" + email + "'"
-    let adminsql = "SELECT email from admin where email = '" + email + "'"
+    let sql = "SELECT * from users where email = '" + email + "'"
 
-    db.query( adminsql, ( err, result ) => {
-        if ( err ) throw err
-        if ( result.length > 0 ) {
-            res.json( { result, msg: "admin" } )
-        } else {
-            db.query( sql, ( err, results ) => {
-                if ( err ) throw err
-                if ( results.length > 0 ) {
-                    res.json( { results, msg: "not admin" } )
+    const errors = validationResult( req )
+
+    if ( !errors.isEmpty() ) {
+        res.json( { errors: errors.array() } )
+    } else {
+        db.query( sql, async ( err, result ) => {
+            if ( err ) throw err
+            if ( result.length > 0 ) {
+                let hashedpassword = result[0].password
+                let isMatch = await bcrypt.compare( password, hashedpassword )
+                if ( isMatch ) {
+                    res.status( 200 ).json( { result } )
                 } else {
-                    res.json( { msg: "wrong credentials" } )
+                    res.status( 400 ).json( { msg: "wrong credentials" } )
                 }
-            } )
-        }
-    } )
+            } else {
+                res.status( 500 ).json( { msg: "Internal Server Error" } )
+            }
+        } )
+    }
 }
