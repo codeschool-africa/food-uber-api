@@ -5,10 +5,10 @@ const db = require( "../models/db" )
 
 let salt = bcrypt.genSaltSync( 12 );
 
-//register customer with email and telephone number
+//register customer with email
 exports.register = async ( req, res ) => {
 
-    const { name, email, password } = req.body
+    const { name, email, tel, password } = req.body
 
     const errors = validationResult( req )
 
@@ -17,7 +17,7 @@ exports.register = async ( req, res ) => {
 
     let createdAt = new Date()
 
-    let emailCheck = "SELECT email from users where email = '" + email + "'"
+    let emailCheck = "SELECT * from users where email = '" + email + "'"
 
     if ( !errors.isEmpty() ) {
         res.json( { errors: errors.array() } )
@@ -31,10 +31,22 @@ exports.register = async ( req, res ) => {
             }
             else {
                 //add user
-                let sql = `INSERT INTO users values (uuid(),?,?,null,?, null,?, false)`
-                db.query( sql, [name, email, hashedpassword, createdAt], ( err, result ) => {
+                let sql = `INSERT INTO users values (uuid(),?,?,?,?, null,?, false)`
+                db.query( sql, [name, email, tel, hashedpassword, createdAt], ( err, result ) => {
                     if ( err ) throw err
-                    res.json( { result } )
+                    if ( result ) {
+                        db.query( emailCheck, ( err, output ) => {
+                            if ( err ) throw err
+                            req.session.userId = output[0].id
+                            req.session.role = output[0].role
+                            req.session.isLoggedIn = true
+                            req.session.email = email
+                            res.json( { output, session: req.session } )
+                        } )
+                        // res.json( { msg: "succeeded" } )
+                    } else {
+                        res.status( 500 ).json( { result, msg: "Internal server error" } )
+                    }
                 } )
             }
         } )
@@ -57,13 +69,63 @@ exports.login = async ( req, res ) => {
                 let hashedpassword = result[0].password
                 let isMatch = await bcrypt.compare( password, hashedpassword )
                 if ( isMatch ) {
-                    res.status( 200 ).json( { result } )
+                    req.session.isLoggedIn = true
+                    req.session.userId = result[0].id
+                    req.session.role = result[0].role
+                    req.session.email = email
+                    res.status( 200 ).json( { result, session: req.session } )
                 } else {
-                    res.status( 400 ).json( { msg: "wrong credentials" } )
+                    res.status( 400 ).json( { msg: "Wrong Credentials" } )
                 }
             } else {
-                res.status( 500 ).json( { msg: "Internal Server Error" } )
+                res.status( 500 ).json( { msg: "Wrong Credentials" } )
             }
         } )
     }
+}
+
+exports.addProfile = async ( req, res ) => {
+    if ( req.session.isLoggedIn === true ) {
+        let sql = "SELECT * from users where id = '" + req.session.userId + "'"
+        db.query( sql, ( err, results ) => {
+            if ( err ) throw err
+            res.json( { results } )
+        } )
+    } else {
+        res.status( 403 ).json( { msg: "Unauthorized" } )
+    }
+}
+
+exports.getUsers = async ( req, res ) => {
+    let sql = "select * from users"
+    let session = req.session
+    console.log( session )
+    if ( session.isLoggedIn && session.role === "admin" ) {
+        db.query( sql, ( err, results ) => {
+            if ( err ) throw err
+            if ( results && results.length > 0 ) {
+                res.status( 200 ).json( { results } )
+            } else if ( results && results.length === 0 ) {
+                res.status( 500 ).json( { msg: "No user found" } )
+            } else {
+                res.status( 500 ).json( { msg: "Internal server error" } )
+            }
+        } )
+    } else {
+        res.status( 403 ).json( { msg: "Unauthorized" } )
+    }
+}
+
+exports.getAdmins = async ( req, res ) => {
+    let sql = `select * from users where role=admin`
+    db.query( sql, ( err, results ) => {
+        if ( err ) throw err
+        if ( results && results.length > 0 ) {
+            res.status( 200 ).json( { results } )
+        } else if ( results && results.length === 0 ) {
+            res.status( 500 ).json( { msg: "No user found" } )
+        } else {
+            res.status( 500 ).json( { msg: "Internal server error" } )
+        }
+    } )
 }

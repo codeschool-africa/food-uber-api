@@ -4,13 +4,15 @@ const { check } = require( 'express-validator' );
 const router = express.Router()
 
 //controllers
-const { register, login } = require( "../controllers/user" )
+const { register, login, addProfile, getUsers, getAdmins } = require( "../controllers/user" )
+const { addFood, getFoods, getFeaturedFoods, placeOrder } = require( "../controllers/product" )
 
 //route to register both admin and customer
 router.post( "/register", [
     [
         check( 'name', 'Please enter your name' ).trim().isLength( { min: 3 } ),
         check( 'email', 'Please include a valid email' ).isEmail(),
+        check( "tel", "Please add a valid telephone number" ).trim().not().isEmpty().isLength( { min: 9 } ),
         check( 'password', 'Password with minimum 6 characters is required' ).trim().isLength( { min: 6 } )
     ]
 ], register )
@@ -22,14 +24,10 @@ router.post( "/login", [
 ], login )
 
 //admin adds food
-router.post( "/add-food", ( req, res ) => {
-    res.json( { msg: "food added" } )
-} )
+router.post( "/add-food", addFood )
 
 //user places an order
-router.post( "/order", ( req, res ) => {
-    res.json( { msg: "order placed" } )
-} )
+router.post( "/order", placeOrder )
 
 //add admin
 router.post( "/add-admin", ( req, res ) => {
@@ -37,14 +35,14 @@ router.post( "/add-admin", ( req, res ) => {
 } )
 
 //retrieves all foods
-router.get( "/get-food", ( req, res ) => {
-    res.json( { msg: "Foods" } )
-} )
+router.get( "/get-foods", getFoods )
 
 //retrieve one food
 router.get( "/get-food/:foodId", ( req, res ) => {
     res.json( { msg: "Food" } )
 } )
+
+router.get( "/get-featured-foods", getFeaturedFoods )
 
 //search queries
 router.get( `/search=`, ( req, res ) => {
@@ -57,9 +55,7 @@ router.get( "/orders", ( req, res ) => {
 } )
 
 // get all users
-router.post( "/users", ( req, res ) => {
-    res.json( { msg: "users retrieved" } )
-} )
+router.get( "/users", getUsers )
 
 //gets a specific order
 router.get( "/orders/:orderId", ( req, res ) => {
@@ -67,8 +63,10 @@ router.get( "/orders/:orderId", ( req, res ) => {
 } )
 
 //get all admins
-router.get( "/admins", ( req, res ) => {
-    res.json( { msg: "admins retrieved" } )
-} )
+router.get( "/admins", getAdmins )
+
+// add/edit profile
+router.post( "/profile", addProfile )
+
 
 module.exports = router
