@@ -1,7 +1,6 @@
 const bcrypt = require( "bcryptjs" )
-
 const { validationResult } = require( 'express-validator' );
-
+// const nodemailer = require( "nodemailer" )
 const db = require( "../models/db" )
 
 let salt = bcrypt.genSaltSync( 12 );
@@ -9,7 +8,7 @@ let salt = bcrypt.genSaltSync( 12 );
 //register customer with email and telephone number
 exports.register = async ( req, res ) => {
 
-    const { name, email, tel, password } = req.body
+    const { name, email, password } = req.body
 
     const errors = validationResult( req )
 
@@ -19,7 +18,6 @@ exports.register = async ( req, res ) => {
     let createdAt = new Date()
 
     let emailCheck = "SELECT email from users where email = '" + email + "'"
-    let telCheck = "SELECT * from users where tel = '" + tel + "'"
 
     if ( !errors.isEmpty() ) {
         res.json( { errors: errors.array() } )
@@ -32,20 +30,11 @@ exports.register = async ( req, res ) => {
                 res.status( 400 ).json( { error: "email address already in use" } )
             }
             else {
-                // checks if telephone exists
-                db.query( telCheck, ( err, result ) => {
+                //add user
+                let sql = `INSERT INTO users values (uuid(),?,?,null,?, null,?, false)`
+                db.query( sql, [name, email, hashedpassword, createdAt], ( err, result ) => {
                     if ( err ) throw err
-                    if ( result.length > 0 ) {
-                        res.status( 400 ).json( { error: "telephone number already in use" } )
-                    } else {
-                        //add normal user
-                        let sql = `INSERT INTO users values (uuid(),?,?,?,?, null,?)`
-                        db.query( sql, [name, email, tel, hashedpassword, createdAt], ( err, result ) => {
-                            if ( err ) throw err
-                            res.json( { result, msg: "not an admin" } )
-                        } )
-
-                    }
+                    res.json( { result } )
                 } )
             }
         } )

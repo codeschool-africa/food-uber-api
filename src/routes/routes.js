@@ -1,10 +1,9 @@
 const express = require( "express" )
+const { check } = require( 'express-validator' );
 
 const router = express.Router()
 
-const { check } = require( 'express-validator' );
-
-//routes
+//controllers
 const { register, login } = require( "../controllers/user" )
 
 //route to register both admin and customer
