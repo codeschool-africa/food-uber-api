@@ -3,18 +3,25 @@ const db = require( "../models/db" )
 
 exports.addFood = async ( req, res ) => {
     const { name, description, category, cost, featured } = req.body
+    const errors = validationResult( req )
     let createdAt = new Date()
     let adminId = req.session.userId
     let sql = `INSERT INTO foods values (uuid(),?,?,?,?,?,?,?)`
+
+
     if ( req.session.isLoggedIn && ( req.session.role === "main-admin" || "admin" ) ) {
-        db.query( sql, [name, description, category, cost, featured, createdAt, adminId], ( err, results ) => {
-            if ( err ) throw err
-            if ( results ) {
-                res.json( { results, msg: "Food added successful" } )
-            } else {
-                res.status( 500 ).json( { msg: "Internal server error" } )
-            }
-        } )
+        if ( !errors.isEmpty() ) {
+            res.json( { errors: errors.array() } )
+        } else {
+            db.query( sql, [name, description, category, cost, featured, createdAt, adminId], ( err, results ) => {
+                if ( err ) throw err
+                if ( results ) {
+                    res.json( { results, msg: "Food added successful" } )
+                } else {
+                    res.status( 500 ).json( { msg: "Internal server error" } )
+                }
+            } )
+        }
     } else {
         res.status( 403 ).json( { msg: "Unauthorized" } )
     }
@@ -22,7 +29,7 @@ exports.addFood = async ( req, res ) => {
 
 exports.updateFood = async ( req, res ) => {
     const { name, description, category, cost, featured } = req.body
-    let adminId = req.session.userId
+    // let adminId = req.session.userId
     let sql = `update foods set name = '${name}', description = '${description}', category = '${category}', cost = '${cost}', featured = '${featured}' where id = '${req.params.foodId}'`
     if ( req.session.isLoggedIn && ( req.session.role === "main-admin" || "admin" ) ) {
         db.query( sql, ( err, results ) => {
@@ -105,4 +112,8 @@ exports.getFood = async ( req, res ) => {
             res.status( 500 ).json( { msg: "Internal server error" } )
         }
     } )
+}
+
+exports.searchFood = async ( req, res ) => {
+    res.json( { msg: "Food searched" } )
 }

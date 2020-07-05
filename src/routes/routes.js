@@ -25,7 +25,10 @@ router.post( "/login", [
 ], login )
 
 //admin adds food
-router.post( "/add-food", addFood )
+router.post( "/add-food", [
+    check( 'name', "Please include food name" ).trim().not().isEmpty(),
+    check( "cost", "Please Include cost" ).trim().not().isEmpty()
+], addFood )
 
 //admin updates food
 router.post( "/update-food/:foodId", updateFood )
