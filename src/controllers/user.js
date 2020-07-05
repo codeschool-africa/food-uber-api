@@ -121,6 +121,11 @@ exports.addProfile = async ( req, res ) => {
     }
 }
 
+// upload profile image
+exports.uploadDp = async ( req, res ) => {
+    res.json( { msg: "hello world, image uploaded" } )
+}
+
 // get users on admins profile
 exports.getUsers = async ( req, res ) => {
     let sql = "select * from users order by createdAt desc"

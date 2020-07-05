@@ -27,6 +27,11 @@ exports.addFood = async ( req, res ) => {
     }
 }
 
+// upload food image
+exports.uploadFoodImage = async ( req, res ) => {
+    res.json( { msg: "image uploaded" } )
+}
+
 // update food by admin
 exports.updateFood = async ( req, res ) => {
     const { name, description, category, cost, featured } = req.body

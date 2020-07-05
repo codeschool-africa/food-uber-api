@@ -4,8 +4,8 @@ const { check } = require( 'express-validator' );
 const router = express.Router()
 
 //controllers
-const { register, login, addProfile, getUsers, getAdmins, addAdmin, removeAdmin, logout } = require( "../controllers/user" )
-const { addFood, getFoods, getFeaturedFoods, updateFood, deleteFood, getFood, searchFood, } = require( "../controllers/product" )
+const { register, login, addProfile, getUsers, getAdmins, addAdmin, removeAdmin, logout, uploadDp } = require( "../controllers/user" )
+const { addFood, getFoods, getFeaturedFoods, updateFood, deleteFood, getFood, searchFood, uploadFoodImage, } = require( "../controllers/product" )
 const { placeOrder, getOrder, getOrders } = require( "../controllers/orders" )
 
 //route to register both admin and customer
@@ -73,6 +73,12 @@ router.post( "/remove-admin/:userId", removeAdmin )
 
 // add/edit profile
 router.post( "/profile", addProfile )
+
+// upload profile image
+router.post( "/upload-dp", uploadDp )
+
+// upload food-image
+router.post( "/upload-food-image", uploadFoodImage )
 
 
 module.exports = router
