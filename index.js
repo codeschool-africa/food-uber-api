@@ -62,7 +62,7 @@ app.get( "/createFoodsTable", ( req, res ) => {
 } )
 
 app.get( "/createOrdersTable", ( req, res ) => {
-  let sql = "Create table orders(id int auto_increment Primary key not null, foodId int not null, location varchar(255) not null, delivery_time timestamp not null, number_of_plates int(11) not null, special_description varchar(255), createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP, orderedBy varchar(255), tel varchar(255) not null, address varchar(255), userId varchar(255) )"
+  let sql = "Create table orders(id int auto_increment Primary key not null, foodId int not null, location varchar(255) not null, delivery_time timestamp not null, number_of_plates int(11) not null, special_description varchar(255), createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP, orderedBy varchar(255), tel varchar(255) not null, address varchar(255), userId varchar(255), delivered tinytin(1) not null )"
 
   db.query( sql, ( err, result ) => {
     if ( err ) throw err

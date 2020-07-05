@@ -6,7 +6,7 @@ exports.placeOrder = async ( req, res ) => {
     const errors = validationResult( req )
     let createdAt = new Date()
 
-    let sql = `insert into orders values (id,?,?,?,?,?,?,?,?,?,?)`
+    let sql = `insert into orders values (id,?,?,?,?,?,?,?,?,?,?,?)`
 
     let foodCheck = `select * from foods where id = '${req.params.foodId}'`
 
@@ -21,7 +21,7 @@ exports.placeOrder = async ( req, res ) => {
                     db.query( userCheck, ( err, output ) => {
                         if ( err ) throw err
                         if ( output && output.length > 0 ) {
-                            db.query( sql, [req.params.foodId, location, delivery_time, number_of_plates, special_description, createdAt, output[0].name, tel, address, req.session.userId], ( err, results ) => {
+                            db.query( sql, [req.params.foodId, location, delivery_time, number_of_plates, special_description, createdAt, output[0].name, tel, address, req.session.userId, 0], ( err, results ) => {
                                 if ( err ) throw err
                                 res.status( 200 ).json( { results, msg: 'Order placed successfully' } )
                             } )
@@ -30,7 +30,7 @@ exports.placeOrder = async ( req, res ) => {
                         }
                     } )
                 } else {
-                    db.query( sql, [req.params.foodId, location, delivery_time, number_of_plates, special_description, createdAt, orderedBy, tel, address, null], ( err, results ) => {
+                    db.query( sql, [req.params.foodId, location, delivery_time, number_of_plates, special_description, createdAt, orderedBy, tel, address, null, 0], ( err, results ) => {
                         if ( err ) throw err
                         res.status( 200 ).json( { results, msg: 'Order placed successfully' } )
                     } )
@@ -42,6 +42,63 @@ exports.placeOrder = async ( req, res ) => {
             }
         } )
     }
+}
+
+exports.editOrder = async ( req, res ) => {
+
+    const { location, special_description, delivery_time, number_of_plates, tel, address } = req.body
+
+    let orderCheck = `select * from orders where id = '${req.params.orderId}'`
+    let sql = `update orders set location = '${location}', special_description = '${special_description}', delivery_time = '${delivery_time}', number_of_plates = '${number_of_plates}', tel = '${tel}', address = '${address}' where id = '${req.params.orderId}'`
+
+    db.query( orderCheck, ( err, output ) => {
+        if ( err ) throw err
+        if ( output && output.length > 0 ) {
+            if ( output[0].userId === req.session.userId && req.session.isLoggedIn ) {
+                db.query( sql, ( err, results ) => {
+                    if ( err ) throw err
+                    if ( results ) {
+                        res.status( 200 ).json( { results, msg: "Order updated successfully" } )
+                    } else {
+                        res.status( 500 ).json( { msg: "Internal server error, please try again" } )
+                    }
+                } )
+            } else {
+                res.status( 403 ).json( { msg: "Unauthorized" } )
+            }
+        } else if ( output && output.length === 0 ) {
+            res.status( 404 ).json( { msg: "Order not found" } )
+        } else {
+            res.status( 500 ).json( { msg: "Internal server error" } )
+        }
+    } )
+}
+
+exports.deleteOrder = async ( req, res ) => {
+    let orderCheck = `select * from orders where id = '${req.params.orderId}'`
+    let sql = `delete from orders where id = '${req.params.orderId}'`
+
+    db.query( orderCheck, ( err, output ) => {
+        if ( err ) throw err
+        if ( output && output.length > 0 ) {
+            if ( output[0].userId === req.session.userId && req.session.isLoggedIn ) {
+                db.query( sql, ( err, results ) => {
+                    if ( err ) throw err
+                    if ( results ) {
+                        res.status( 200 ).json( { results, msg: "Order deleted successfully" } )
+                    } else {
+                        res.status( 500 ).json( { msg: "Internal server error, please try again" } )
+                    }
+                } )
+            } else {
+                res.status( 403 ).json( { msg: "Unauthorized" } )
+            }
+        } else if ( output && output.length === 0 ) {
+            res.status( 404 ).json( { msg: "Order not found" } )
+        } else {
+            res.status( 500 ).json( { msg: "Internal server error" } )
+        }
+    } )
 }
 
 exports.getOrders = async ( req, res ) => {
@@ -61,5 +118,45 @@ exports.getOrders = async ( req, res ) => {
 }
 
 exports.getOrder = async ( req, res ) => {
-    res.json( { msg: 'order retrieved' } )
+    let sql = `select * from orders where id = '${req.params.orderId}'`
+    if ( req.session.isLoggedIn && ( req.session.role === "admin" || "main-admin" ) ) {
+        db.query( sql, ( err, output ) => {
+            if ( err ) throw err
+            if ( output && output.length > 0 ) {
+                res.status( 200 ).json( { output, msg: "Order retrieved" } )
+            } else if ( output && output.length === 0 ) {
+                res.status( 404 ).json( { msg: "Order not found" } )
+            } else {
+                res.status( 500 ).json( { msg: "Internal server error" } )
+            }
+        } )
+    } else {
+        res.status( 403 ).json( { msg: "Unauthorized" } )
+    }
+}
+
+exports.markOrderAsDelivered = async ( req, res ) => {
+    let orderCheck = `select * from orders where id = '${req.params.orderId}'`
+    let sql = `update orders set delivered = '1' where id = '${req.params.orderId}'`
+    if ( req.session.isLoggedIn && ( req.session.role === "admin" || "main-admin" ) ) {
+        db.query( orderCheck, ( err, output ) => {
+            if ( err ) throw err
+            if ( output && output.length > 0 ) {
+                db.query( sql, ( err, results ) => {
+                    if ( err ) throw err
+                    if ( results ) {
+                        res.status( 200 ).json( { results, msg: 'Order delivered' } )
+                    } else {
+                        res.status( 500 ).json( { msg: "Internal server error, Failed to confirm delivery" } )
+                    }
+                } )
+            } else if ( output && output.length === 0 ) {
+                res.status( 404 ).json( { msg: 'Order not found' } )
+            } else {
+                res.status( 500 ).json( { msg: "Internal server error" } )
+            }
+        } )
+    } else {
+        res.status( 403 ).json( { msg: "Unauthorized" } )
+    }
 }

@@ -6,7 +6,7 @@ const router = express.Router()
 //controllers
 const { register, login, addProfile, getUsers, getAdmins, addAdmin, removeAdmin, logout, uploadDp } = require( "../controllers/user" )
 const { addFood, getFoods, getFeaturedFoods, updateFood, deleteFood, getFood, searchFood, uploadFoodImage, } = require( "../controllers/product" )
-const { placeOrder, getOrder, getOrders } = require( "../controllers/orders" )
+const { placeOrder, getOrder, getOrders, markOrderAsDelivered, editOrder, deleteOrder } = require( "../controllers/orders" )
 
 //route to register both admin and customer
 router.post( "/register", [
@@ -39,9 +39,6 @@ router.post( "/update-food/:foodId", updateFood )
 //admin deletes food
 router.post( "/delete-food/:foodId", deleteFood )
 
-//user places an order
-router.post( "/order/:foodId", placeOrder )
-
 //retrieves all foods
 router.get( "/get-foods", getFoods )
 
@@ -53,11 +50,23 @@ router.get( "/get-featured-foods", getFeaturedFoods )
 //search queries
 router.get( `/search/:query`, searchFood )
 
+//user places an order
+router.post( "/order/:foodId", placeOrder )
+
+// edit order
+router.post( "/edit-order/:orderId", editOrder )
+
+// delete order
+router.post( "/delete-order/:orderId", deleteOrder )
+
 //retrieves all orders
 router.get( "/orders", getOrders )
 
 //gets a specific order
-router.get( "/orders/:orderId", getOrder )
+router.get( "/order/:orderId", getOrder )
+
+// delivered orders
+router.post( "/mark-delivered-order/:orderId", markOrderAsDelivered )
 
 // get all users
 router.get( "/users", getUsers )
