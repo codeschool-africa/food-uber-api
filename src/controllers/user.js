@@ -40,10 +40,8 @@ exports.register = async ( req, res ) => {
                             req.session.userId = output[0].id
                             req.session.role = output[0].role
                             req.session.isLoggedIn = true
-                            req.session.email = email
                             res.json( { output, session: req.session } )
                         } )
-                        // res.json( { msg: "succeeded" } )
                     } else {
                         res.status( 500 ).json( { result, msg: "Internal server error" } )
                     }
@@ -53,7 +51,7 @@ exports.register = async ( req, res ) => {
     }
 }
 
-//login customer with telephone or email
+//login customer with email
 exports.login = async ( req, res ) => {
     let { email, password } = req.body
     let sql = "SELECT * from users where email = '" + email + "'"
@@ -72,7 +70,6 @@ exports.login = async ( req, res ) => {
                     req.session.isLoggedIn = true
                     req.session.userId = result[0].id
                     req.session.role = result[0].role
-                    req.session.email = email
                     res.status( 200 ).json( { result, session: req.session } )
                 } else {
                     res.status( 400 ).json( { msg: "Wrong Credentials" } )
@@ -97,10 +94,9 @@ exports.addProfile = async ( req, res ) => {
 }
 
 exports.getUsers = async ( req, res ) => {
-    let sql = "select * from users"
+    let sql = "select * from users order by createdAt desc"
     let session = req.session
-    console.log( session )
-    if ( session.isLoggedIn && session.role === "admin" ) {
+    if ( session.isLoggedIn && ( session.role === "admin" || "main-admin" ) ) {
         db.query( sql, ( err, results ) => {
             if ( err ) throw err
             if ( results && results.length > 0 ) {
@@ -117,25 +113,56 @@ exports.getUsers = async ( req, res ) => {
 }
 
 exports.getAdmins = async ( req, res ) => {
-    let sql = `select * from users where role=admin`
-    db.query( sql, ( err, results ) => {
+    let sql = `select * from users where role = 'admin' order by createdAt desc`
+    let session = req.session
+    if ( session.isLoggedIn && ( session.role === "main-admin" ) ) {
+        db.query( sql, ( err, results ) => {
+            if ( err ) throw err
+            if ( results && results.length > 0 ) {
+                res.status( 200 ).json( { results } )
+            } else if ( results && results.length === 0 ) {
+                res.status( 500 ).json( { msg: "No user found" } )
+            } else {
+                res.status( 500 ).json( { msg: "Internal server error" } )
+            }
+        } )
+    } else {
+        res.status( 403 ).json( { msg: "Unauthorized" } )
+    }
+}
+
+exports.addAdmin = async ( req, res ) => {
+    let userCheck = `select * from users where id = '${req.params.userId}'`
+    let sql = `update users set role = 'admin' where id = '${req.params.userId}'`
+    db.query( userCheck, ( err, output ) => {
         if ( err ) throw err
-        if ( results && results.length > 0 ) {
-            res.status( 200 ).json( { results } )
-        } else if ( results && results.length === 0 ) {
-            res.status( 500 ).json( { msg: "No user found" } )
+        if ( output && output.length > 0 ) {
+            db.query( sql, ( err, results ) => {
+                if ( err ) throw err
+                res.status( 200 ).json( { results, msg: "Admin added" } )
+            } )
+        } else if ( output && output.length === 0 ) {
+            res.status( 404 ).json( { msg: "User not found" } )
         } else {
             res.status( 500 ).json( { msg: "Internal server error" } )
         }
     } )
 }
 
-exports.addAdmin = async ( req, res ) => {
-    res.json( { msg: "admin added" } )
-}
-
 exports.removeAdmin = async ( req, res ) => {
-    res.json( { msg: "admin removed" } )
+    let userCheck = `select * from users where id = '${req.params.userId}'`
+    let sql = `update users set role = 'null' where id = '${req.params.userId}'`
+    db.query( userCheck, ( err, output ) => {
+        if ( err ) throw err
+        if ( output && output.length > 0 ) {
+            db.query( sql, ( err, results ) => {
+                if ( err ) throw err
+                res.status( 200 ).json( { results, msg: "Admin removed" } )
+            } )
+        } else if ( output && output.length === 0 ) {
+            res.status( 404 ).json( { msg: "User not found" } )
+        } else {
+            res.status( 500 ).json( { msg: "Internal server error" } )
+        }
+    } )
 }
-
-//add main-admin role to add/delete admins

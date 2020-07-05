@@ -21,15 +21,51 @@ exports.addFood = async ( req, res ) => {
 }
 
 exports.updateFood = async ( req, res ) => {
-    res.json( { msg: "food updated" } )
+    const { name, description, category, cost, featured } = req.body
+    let adminId = req.session.userId
+    let sql = `update foods set name = '${name}', description = '${description}', category = '${category}', cost = '${cost}', featured = '${featured}' where id = '${req.params.foodId}'`
+    if ( req.session.isLoggedIn && ( req.session.role === "main-admin" || "admin" ) ) {
+        db.query( sql, ( err, results ) => {
+            if ( err ) throw err
+            if ( results ) {
+                res.json( { results, msg: "Food updated successful" } )
+            } else {
+                res.status( 500 ).json( { msg: "Internal server error" } )
+            }
+        } )
+    } else {
+        res.status( 403 ).json( { msg: "Unauthorized" } )
+    }
 }
 
 exports.deleteFood = async ( req, res ) => {
-    res.json( { msg: "food deleted" } )
+    let sql = `delete from foods where id = '${req.params.foodId}'`
+    let foodIdCheck = `select * from foods where id = '${req.params.foodId}'`
+    if ( req.session.isLoggedIn && ( req.session.role === "main-admin" || "admin" ) ) {
+        db.query( foodIdCheck, ( err, output ) => {
+            if ( err ) throw err
+            if ( output && output.length > 0 ) {
+                db.query( sql, ( err, results ) => {
+                    if ( err ) throw err
+                    if ( results ) {
+                        res.json( { results, msg: "Food deleted successful" } )
+                    } else {
+                        res.status( 500 ).json( { msg: "internal server error" } )
+                    }
+                } )
+            } else if ( output && output.length === 0 ) {
+                res.status( 404 ).json( { msg: 'Food not found' } )
+            } else {
+                res.status( 500 ).json( { msg: "Ingternal server error" } )
+            }
+        } )
+    } else {
+        res.status( 403 ).json( { msg: 'Unauthorized' } )
+    }
 }
 
 exports.getFoods = async ( req, res ) => {
-    let sql = "select * from foods ORDER BY createdAt"
+    let sql = "select * from foods ORDER BY createdAt desc"
     db.query( sql, ( err, results ) => {
         if ( err ) throw err
         if ( results && results.length > 0 ) {
@@ -43,7 +79,7 @@ exports.getFoods = async ( req, res ) => {
 }
 
 exports.getFeaturedFoods = async ( req, res ) => {
-    let sql = "select * from foods where featured=1 ORDER BY createdAt"
+    let sql = "select * from foods where featured=1 ORDER BY createdAt desc"
     db.query( sql, ( err, results ) => {
         if ( err ) throw err
         if ( results && results.length > 0 ) {
@@ -56,6 +92,17 @@ exports.getFeaturedFoods = async ( req, res ) => {
     } )
 }
 
-exports.placeOrder = async ( req, res ) => {
-    res.json( { msg: "order placed" } )
+// gets single food by id
+exports.getFood = async ( req, res ) => {
+    let sql = "select * from foods where id = '" + req.params.foodId + "'"
+    db.query( sql, ( err, results ) => {
+        if ( err ) throw err
+        if ( results && results.length > 0 ) {
+            res.json( { results } )
+        } else if ( results && results.length === 0 ) {
+            res.status( 404 ).json( { msg: "Food not found" } )
+        } else {
+            res.status( 500 ).json( { msg: "Internal server error" } )
+        }
+    } )
 }

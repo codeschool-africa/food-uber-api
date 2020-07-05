@@ -5,7 +5,8 @@ const router = express.Router()
 
 //controllers
 const { register, login, addProfile, getUsers, getAdmins, addAdmin, removeAdmin } = require( "../controllers/user" )
-const { addFood, getFoods, getFeaturedFoods, placeOrder, updateFood, deleteFood } = require( "../controllers/product" )
+const { addFood, getFoods, getFeaturedFoods, updateFood, deleteFood, getFood, } = require( "../controllers/product" )
+const { placeOrder, getOrder, getOrders } = require( "../controllers/orders" )
 
 //route to register both admin and customer
 router.post( "/register", [
@@ -27,26 +28,19 @@ router.post( "/login", [
 router.post( "/add-food", addFood )
 
 //admin updates food
-router.post( "/update-food", updateFood )
+router.post( "/update-food/:foodId", updateFood )
 
 //admin deletes food
-router.post( "/add-food", deleteFood )
+router.post( "/delete-food/:foodId", deleteFood )
 
 //user places an order
 router.post( "/order", placeOrder )
-
-//add admin
-router.post( "/add-admin", ( req, res ) => {
-    res.json( { msg: "admin added" } )
-} )
 
 //retrieves all foods
 router.get( "/get-foods", getFoods )
 
 //retrieve one food
-router.get( "/get-food/:foodId", ( req, res ) => {
-    res.json( { msg: "Food" } )
-} )
+router.get( "/get-food/:foodId", getFood )
 
 router.get( "/get-featured-foods", getFeaturedFoods )
 
@@ -56,26 +50,22 @@ router.get( `/search=`, ( req, res ) => {
 } )
 
 //retrieves all orders
-router.get( "/orders", ( req, res ) => {
-    res.json( { msg: "Orders" } )
-} )
+router.get( "/orders", getOrders )
+
+//gets a specific order
+router.get( "/orders/:orderId", getOrder )
 
 // get all users
 router.get( "/users", getUsers )
-
-//gets a specific order
-router.get( "/orders/:orderId", ( req, res ) => {
-    res.json( { msg: "order retrieved" } )
-} )
 
 //get all admins
 router.get( "/admins", getAdmins )
 
 //main admin add admin
-router.post( "/add-admin", addAdmin )
+router.post( "/add-admin/:userId", addAdmin )
 
 //main admin removes admins
-router.post( "/remove-admin", removeAdmin )
+router.post( "/remove-admin/:userId", removeAdmin )
 
 // add/edit profile
 router.post( "/profile", addProfile )
