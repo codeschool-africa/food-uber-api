@@ -1,13 +1,13 @@
 const { validationResult } = require( 'express-validator' );
 const db = require( "../models/db" )
 
+// add food by admin
 exports.addFood = async ( req, res ) => {
     const { name, description, category, cost, featured } = req.body
     const errors = validationResult( req )
     let createdAt = new Date()
     let adminId = req.session.userId
-    let sql = `INSERT INTO foods values (uuid(),?,?,?,?,?,?,?)`
-
+    let sql = `INSERT INTO foods values (id,?,?,?,?,?,?,?)`
 
     if ( req.session.isLoggedIn && ( req.session.role === "main-admin" || "admin" ) ) {
         if ( !errors.isEmpty() ) {
@@ -27,6 +27,7 @@ exports.addFood = async ( req, res ) => {
     }
 }
 
+// update food by admin
 exports.updateFood = async ( req, res ) => {
     const { name, description, category, cost, featured } = req.body
     // let adminId = req.session.userId
@@ -45,6 +46,7 @@ exports.updateFood = async ( req, res ) => {
     }
 }
 
+// delete food by admin
 exports.deleteFood = async ( req, res ) => {
     let sql = `delete from foods where id = '${req.params.foodId}'`
     let foodIdCheck = `select * from foods where id = '${req.params.foodId}'`
@@ -71,6 +73,7 @@ exports.deleteFood = async ( req, res ) => {
     }
 }
 
+// get all foods
 exports.getFoods = async ( req, res ) => {
     let sql = "select * from foods ORDER BY createdAt desc"
     db.query( sql, ( err, results ) => {
@@ -85,6 +88,7 @@ exports.getFoods = async ( req, res ) => {
     } )
 }
 
+// get featured foods
 exports.getFeaturedFoods = async ( req, res ) => {
     let sql = "select * from foods where featured=1 ORDER BY createdAt desc"
     db.query( sql, ( err, results ) => {

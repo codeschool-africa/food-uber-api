@@ -4,8 +4,8 @@ const { check } = require( 'express-validator' );
 const router = express.Router()
 
 //controllers
-const { register, login, addProfile, getUsers, getAdmins, addAdmin, removeAdmin } = require( "../controllers/user" )
-const { addFood, getFoods, getFeaturedFoods, updateFood, deleteFood, getFood, } = require( "../controllers/product" )
+const { register, login, addProfile, getUsers, getAdmins, addAdmin, removeAdmin, logout } = require( "../controllers/user" )
+const { addFood, getFoods, getFeaturedFoods, updateFood, deleteFood, getFood, searchFood, } = require( "../controllers/product" )
 const { placeOrder, getOrder, getOrders } = require( "../controllers/orders" )
 
 //route to register both admin and customer
@@ -24,6 +24,9 @@ router.post( "/login", [
     check( 'password', 'Password is required' ).trim().not().isEmpty()
 ], login )
 
+// logout user
+router.post( "/logout", logout )
+
 //admin adds food
 router.post( "/add-food", [
     check( 'name', "Please include food name" ).trim().not().isEmpty(),
@@ -37,7 +40,7 @@ router.post( "/update-food/:foodId", updateFood )
 router.post( "/delete-food/:foodId", deleteFood )
 
 //user places an order
-router.post( "/order", placeOrder )
+router.post( "/order/:foodId", placeOrder )
 
 //retrieves all foods
 router.get( "/get-foods", getFoods )
@@ -48,9 +51,7 @@ router.get( "/get-food/:foodId", getFood )
 router.get( "/get-featured-foods", getFeaturedFoods )
 
 //search queries
-router.get( `/search=`, ( req, res ) => {
-    res.json( { msg: "Foods" } )
-} )
+router.get( `/search/:query`, searchFood )
 
 //retrieves all orders
 router.get( "/orders", getOrders )

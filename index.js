@@ -53,7 +53,7 @@ app.get( "/createUsersTable", ( req, res ) => {
 } )
 
 app.get( "/createFoodsTable", ( req, res ) => {
-  let sql = "Create table foods(id varchar(36) Primary key not null, name varchar(255) not null, description varchar(255), category varchar(255), cost int(11) not null, featured tinyint(1) not null, createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP, createdBy varchar(255) )"
+  let sql = "Create table foods(id int auto_increment Primary key not null, name varchar(255) not null, description varchar(255), category varchar(255), cost int(11) not null, featured tinyint(1) not null, createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP, createdBy varchar(255) )"
 
   db.query( sql, ( err, result ) => {
     if ( err ) throw err
@@ -61,14 +61,14 @@ app.get( "/createFoodsTable", ( req, res ) => {
   } )
 } )
 
-// app.get("/createOrdersTable", (req, res) => {
-//   let sql = "Create table orders(id varchar(36) Primary key not null, name varchar(255) not null, category varchar(255), cost int(11) not null, featured tinyint(1) not null, createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP, createdBy varchar(255) )"
+app.get( "/createOrdersTable", ( req, res ) => {
+  let sql = "Create table orders(id int auto_increment Primary key not null, foodId int not null, location varchar(255) not null, delivery_time varchar(255), number_of_plates int(11) not null, special_description varchar(255), createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP, orderedBy varchar(255) )"
 
-//   db.query( sql, ( err, result ) => {
-//     if ( err ) throw err
-//     res.json( result )
-//   } )
-// })
+  db.query( sql, ( err, result ) => {
+    if ( err ) throw err
+    res.json( result )
+  } )
+} )
 
 const PORT = process.env.PORT || 5000
 
