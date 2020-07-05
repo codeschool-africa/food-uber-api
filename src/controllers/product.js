@@ -37,17 +37,24 @@ exports.updateFood = async ( req, res ) => {
     const { name, description, category, cost, featured } = req.body
     // let adminId = req.session.userId
     let sql = `update foods set name = '${name}', description = '${description}', category = '${category}', cost = '${cost}', featured = '${featured}' where id = '${req.params.foodId}'`
-    if ( req.session.isLoggedIn && ( req.session.role === "main-admin" || "admin" ) ) {
-        db.query( sql, ( err, results ) => {
-            if ( err ) throw err
-            if ( results ) {
-                res.json( { results, msg: "Food updated successful" } )
-            } else {
-                res.status( 500 ).json( { msg: "Internal server error" } )
-            }
-        } )
+
+    let errors = validationResult( req )
+
+    if ( !errors.isEmpty() ) {
+        res.json( { errors: errors.array() } )
     } else {
-        res.status( 403 ).json( { msg: "Unauthorized" } )
+        if ( req.session.isLoggedIn && ( req.session.role === "main-admin" || "admin" ) ) {
+            db.query( sql, ( err, results ) => {
+                if ( err ) throw err
+                if ( results ) {
+                    res.json( { results, msg: "Food updated successful" } )
+                } else {
+                    res.status( 500 ).json( { msg: "Internal server error" } )
+                }
+            } )
+        } else {
+            res.status( 403 ).json( { msg: "Unauthorized" } )
+        }
     }
 }
 
@@ -123,6 +130,25 @@ exports.getFood = async ( req, res ) => {
     } )
 }
 
-exports.searchFood = async ( req, res ) => {
-    res.json( { msg: "Food searched" } )
+// 
+exports.search = async ( req, res ) => {
+    let keyword = req.body.keyword
+    let sql = `select * from foods where name like '%${keyword}%' or description like '%${keyword}%' or category like '%${keyword}%'`
+
+    let errors = validationResult( req )
+
+    if ( !errors.isEmpty() ) {
+        res.json( { errors: errors.array() } )
+    } else {
+        db.query( sql, ( err, results ) => {
+            if ( err ) throw err
+            if ( results && results.length > 0 ) {
+                res.json( { results } )
+            } else if ( results && results.length === 0 ) {
+                res.status( 404 ).json( { msg: "No result found" } )
+            } else {
+                res.status( 500 ).json( { msg: "Internal server error, please try again" } )
+            }
+        } )
+    }
 }

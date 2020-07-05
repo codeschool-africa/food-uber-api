@@ -51,27 +51,33 @@ exports.editOrder = async ( req, res ) => {
     let orderCheck = `select * from orders where id = '${req.params.orderId}'`
     let sql = `update orders set location = '${location}', special_description = '${special_description}', delivery_time = '${delivery_time}', number_of_plates = '${number_of_plates}', tel = '${tel}', address = '${address}' where id = '${req.params.orderId}'`
 
-    db.query( orderCheck, ( err, output ) => {
-        if ( err ) throw err
-        if ( output && output.length > 0 ) {
-            if ( output[0].userId === req.session.userId && req.session.isLoggedIn ) {
-                db.query( sql, ( err, results ) => {
-                    if ( err ) throw err
-                    if ( results ) {
-                        res.status( 200 ).json( { results, msg: "Order updated successfully" } )
-                    } else {
-                        res.status( 500 ).json( { msg: "Internal server error, please try again" } )
-                    }
-                } )
+    let errors = validationResult( req )
+
+    if ( !errors.isEmpty() ) {
+        res.json( { errors: errors.array() } )
+    } else {
+        db.query( orderCheck, ( err, output ) => {
+            if ( err ) throw err
+            if ( output && output.length > 0 ) {
+                if ( output[0].userId === req.session.userId && req.session.isLoggedIn ) {
+                    db.query( sql, ( err, results ) => {
+                        if ( err ) throw err
+                        if ( results ) {
+                            res.status( 200 ).json( { results, msg: "Order updated successfully" } )
+                        } else {
+                            res.status( 500 ).json( { msg: "Internal server error, please try again" } )
+                        }
+                    } )
+                } else {
+                    res.status( 403 ).json( { msg: "Unauthorized" } )
+                }
+            } else if ( output && output.length === 0 ) {
+                res.status( 404 ).json( { msg: "Order not found" } )
             } else {
-                res.status( 403 ).json( { msg: "Unauthorized" } )
+                res.status( 500 ).json( { msg: "Internal server error" } )
             }
-        } else if ( output && output.length === 0 ) {
-            res.status( 404 ).json( { msg: "Order not found" } )
-        } else {
-            res.status( 500 ).json( { msg: "Internal server error" } )
-        }
-    } )
+        } )
+    }
 }
 
 exports.deleteOrder = async ( req, res ) => {

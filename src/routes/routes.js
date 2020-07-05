@@ -5,9 +5,10 @@ const router = express.Router()
 
 //controllers
 const { register, login, addProfile, getUsers, getAdmins, addAdmin, removeAdmin, logout, uploadDp } = require( "../controllers/user" )
-const { addFood, getFoods, getFeaturedFoods, updateFood, deleteFood, getFood, searchFood, uploadFoodImage, } = require( "../controllers/product" )
+const { addFood, getFoods, getFeaturedFoods, updateFood, deleteFood, getFood, search, uploadFoodImage, } = require( "../controllers/product" )
 const { placeOrder, getOrder, getOrders, markOrderAsDelivered, editOrder, deleteOrder } = require( "../controllers/orders" )
 
+//users
 //route to register both admin and customer
 router.post( "/register", [
     [
@@ -24,49 +25,13 @@ router.post( "/login", [
     check( 'password', 'Password is required' ).trim().not().isEmpty()
 ], login )
 
-// logout user
-router.post( "/logout", logout )
+// add/edit profile
+router.post( "/profile", [
+    check( "name", "Please include your name" ).trim().not().isEmpty()
+], addProfile )
 
-//admin adds food
-router.post( "/add-food", [
-    check( 'name', "Please include food name" ).trim().not().isEmpty(),
-    check( "cost", "Please Include cost" ).trim().not().isEmpty()
-], addFood )
-
-//admin updates food
-router.post( "/update-food/:foodId", updateFood )
-
-//admin deletes food
-router.post( "/delete-food/:foodId", deleteFood )
-
-//retrieves all foods
-router.get( "/get-foods", getFoods )
-
-//retrieve one food
-router.get( "/get-food/:foodId", getFood )
-
-router.get( "/get-featured-foods", getFeaturedFoods )
-
-//search queries
-router.get( `/search/:query`, searchFood )
-
-//user places an order
-router.post( "/order/:foodId", placeOrder )
-
-// edit order
-router.post( "/edit-order/:orderId", editOrder )
-
-// delete order
-router.post( "/delete-order/:orderId", deleteOrder )
-
-//retrieves all orders
-router.get( "/orders", getOrders )
-
-//gets a specific order
-router.get( "/order/:orderId", getOrder )
-
-// delivered orders
-router.post( "/mark-delivered-order/:orderId", markOrderAsDelivered )
+// upload profile image
+router.post( "/upload-dp", uploadDp )
 
 // get all users
 router.get( "/users", getUsers )
@@ -80,14 +45,69 @@ router.post( "/add-admin/:userId", addAdmin )
 //main admin removes admins
 router.post( "/remove-admin/:userId", removeAdmin )
 
-// add/edit profile
-router.post( "/profile", addProfile )
+// logout user
+router.post( "/logout", logout )
 
-// upload profile image
-router.post( "/upload-dp", uploadDp )
+// foods
+//admin adds food
+router.post( "/add-food", [
+    check( 'name', "Please include food name" ).trim().not().isEmpty(),
+    check( "cost", "Please Include cost" ).trim().not().isEmpty()
+], addFood )
 
 // upload food-image
 router.post( "/upload-food-image", uploadFoodImage )
 
+//admin updates food
+router.post( "/update-food/:foodId", [
+    check( "name", "Please include food name" ).trim().not().isEmpty(),
+    check( "cost", "please include cost of this food" ).trim().not().isEmpty()
+], updateFood )
+
+//admin deletes food
+router.post( "/delete-food/:foodId", deleteFood )
+
+//retrieves all foods
+router.get( "/get-foods", getFoods )
+
+//retrieve one food
+router.get( "/get-food/:foodId", getFood )
+
+router.get( "/get-featured-foods", getFeaturedFoods )
+
+//search queries
+router.post( `/search`, [
+    check( "keyword", "Please enter any keyword to search" ).trim().not().isEmpty()
+], search )
+
+//user places an order
+router.post( "/order/:foodId", [
+    check( "location", "Please include your location" ).trim().not().isEmpty(),
+    check( "delivery_time", 'Please add delivery time' ).trim().not().isEmpty(),
+    check( "number_of_plates", "Please include number of plates" ).trim().not().isEmpty(),
+    check( "tel", "Please include your telephone number" ).trim().not().isEmpty(),
+    check( "orderedBy", "Please include your name" ).trim().not().isEmpty()
+], placeOrder )
+
+// orders
+// edit order
+router.post( "/edit-order/:orderId", [
+    check( "location", "Please include your location" ).trim().not().isEmpty(),
+    check( "delivery_time", 'Please add delivery time' ).trim().not().isEmpty(),
+    check( "number_of_plates", "Please include number of plates" ).trim().not().isEmpty(),
+    check( "tel", "Please include your telephone number" ).trim().not().isEmpty(),
+], editOrder )
+
+// delete order
+router.post( "/delete-order/:orderId", deleteOrder )
+
+//retrieves all orders
+router.get( "/orders", getOrders )
+
+//gets a specific order
+router.get( "/order/:orderId", getOrder )
+
+// delivered orders
+router.post( "/mark-delivered-order/:orderId", markOrderAsDelivered )
 
 module.exports = router
