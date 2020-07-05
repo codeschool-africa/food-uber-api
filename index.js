@@ -69,5 +69,7 @@ app.listen( PORT, () => console.log( `Server running on port ${PORT}` ) )
 // add verification via emails to verify users (right??)
 // create food table with required columns
 // create orders table with relevant columns
+//create profile-images table
+//create food images table
 
 //also try to deploy the api and run it if it works

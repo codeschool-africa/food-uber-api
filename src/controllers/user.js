@@ -129,3 +129,13 @@ exports.getAdmins = async ( req, res ) => {
         }
     } )
 }
+
+exports.addAdmin = async ( req, res ) => {
+    res.json( { msg: "admin added" } )
+}
+
+exports.removeAdmin = async ( req, res ) => {
+    res.json( { msg: "admin removed" } )
+}
+
+//add main-admin role to add/delete admins

@@ -6,7 +6,7 @@ exports.addFood = async ( req, res ) => {
     let createdAt = new Date()
     let adminId = req.session.userId
     let sql = `INSERT INTO foods values (uuid(),?,?,?,?,?,?,?)`
-    if ( req.session.isLoggedIn && req.session.role === "admin" ) {
+    if ( req.session.isLoggedIn && ( req.session.role === "main-admin" || "admin" ) ) {
         db.query( sql, [name, description, category, cost, featured, createdAt, adminId], ( err, results ) => {
             if ( err ) throw err
             if ( results ) {
@@ -20,8 +20,16 @@ exports.addFood = async ( req, res ) => {
     }
 }
 
+exports.updateFood = async ( req, res ) => {
+    res.json( { msg: "food updated" } )
+}
+
+exports.deleteFood = async ( req, res ) => {
+    res.json( { msg: "food deleted" } )
+}
+
 exports.getFoods = async ( req, res ) => {
-    let sql = "select * from foods"
+    let sql = "select * from foods ORDER BY createdAt"
     db.query( sql, ( err, results ) => {
         if ( err ) throw err
         if ( results && results.length > 0 ) {
@@ -35,7 +43,7 @@ exports.getFoods = async ( req, res ) => {
 }
 
 exports.getFeaturedFoods = async ( req, res ) => {
-    let sql = "select * from foods where featured=1"
+    let sql = "select * from foods where featured=1 ORDER BY createdAt"
     db.query( sql, ( err, results ) => {
         if ( err ) throw err
         if ( results && results.length > 0 ) {

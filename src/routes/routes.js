@@ -4,8 +4,8 @@ const { check } = require( 'express-validator' );
 const router = express.Router()
 
 //controllers
-const { register, login, addProfile, getUsers, getAdmins } = require( "../controllers/user" )
-const { addFood, getFoods, getFeaturedFoods, placeOrder } = require( "../controllers/product" )
+const { register, login, addProfile, getUsers, getAdmins, addAdmin, removeAdmin } = require( "../controllers/user" )
+const { addFood, getFoods, getFeaturedFoods, placeOrder, updateFood, deleteFood } = require( "../controllers/product" )
 
 //route to register both admin and customer
 router.post( "/register", [
@@ -25,6 +25,12 @@ router.post( "/login", [
 
 //admin adds food
 router.post( "/add-food", addFood )
+
+//admin updates food
+router.post( "/update-food", updateFood )
+
+//admin deletes food
+router.post( "/add-food", deleteFood )
 
 //user places an order
 router.post( "/order", placeOrder )
@@ -64,6 +70,12 @@ router.get( "/orders/:orderId", ( req, res ) => {
 
 //get all admins
 router.get( "/admins", getAdmins )
+
+//main admin add admin
+router.post( "/add-admin", addAdmin )
+
+//main admin removes admins
+router.post( "/remove-admin", removeAdmin )
 
 // add/edit profile
 router.post( "/profile", addProfile )
