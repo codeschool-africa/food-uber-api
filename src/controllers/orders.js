@@ -141,6 +141,23 @@ exports.getOrder = async ( req, res ) => {
     }
 }
 
+exports.myOrders = async ( req, res ) => {
+    let sql = `select * from orders where userId = '${req.session.userId}'`
+    if ( req.session.isLoggedIn && req.session.userId ) {
+        db.query( sql, ( err, results ) => {
+            if ( results && results.length > 0 ) {
+                res.status( 200 ).json( { results, msg: "Your orders were retrieved successfully" } )
+            } else if ( results && results.length === 0 ) {
+                res.status( 404 ).json( { msg: "You didn't place any order" } )
+            } else {
+                res.status( 500 ).json( { msg: "Couldn't retrieve your orders, please try again" } )
+            }
+        } )
+    } else {
+        res.status( 403 ).json( { msg: "Unauthorized" } )
+    }
+}
+
 exports.markOrderAsDelivered = async ( req, res ) => {
     let orderCheck = `select * from orders where id = '${req.params.orderId}'`
     let sql = `update orders set delivered = '1' where id = '${req.params.orderId}'`
@@ -158,6 +175,51 @@ exports.markOrderAsDelivered = async ( req, res ) => {
                 } )
             } else if ( output && output.length === 0 ) {
                 res.status( 404 ).json( { msg: 'Order not found' } )
+            } else {
+                res.status( 500 ).json( { msg: "Internal server error" } )
+            }
+        } )
+    } else {
+        res.status( 403 ).json( { msg: "Unauthorized" } )
+    }
+}
+
+// get user orders
+exports.getUserOrders = async ( req, res ) => {
+    let sql = `select * from orders where userId = '${req.params.userId}'`
+    let userCheck = `select * from users where id = '${req.params.userId}'`
+    if ( req.session.isLoggedIn && ( req.session.role === "main-admin" || "admin" ) ) {
+        db.query( userCheck, ( err, output ) => {
+            if ( err ) throw err
+            if ( output && output.length > 0 ) {
+                db.query( sql, ( err, results ) => {
+                    if ( err ) throw err
+                    res.json( { results } )
+                } )
+            } else if ( output && output.length === 0 ) {
+                res.status( 404 ).json( { msg: 'User not found' } )
+            } else {
+                res.status( 500 ).json( { msg: "Internal server error" } )
+            }
+        } )
+    } else {
+        res.status( 403 ).json( { msg: "Unauthorized" } )
+    }
+}
+
+exports.getFoodOrders = async ( req, res ) => {
+    let sql = `select * from orders where foodId = '${req.params.foodId}'`
+    let foodCheck = `select * from foods where id = '${req.params.foodId}'`
+    if ( req.session.isLoggedIn && ( req.session.role === "main-admin" || "admin" ) ) {
+        db.query( foodCheck, ( err, output ) => {
+            if ( err ) throw err
+            if ( output && output.length > 0 ) {
+                db.query( sql, ( err, results ) => {
+                    if ( err ) throw err
+                    res.json( { results } )
+                } )
+            } else if ( output && output.length === 0 ) {
+                res.status( 404 ).json( { msg: 'Food not found' } )
             } else {
                 res.status( 500 ).json( { msg: "Internal server error" } )
             }

@@ -78,6 +78,24 @@ app.get( "/createOrdersTable", ( req, res ) => {
   } )
 } )
 
+app.get( "/createCartTable", ( req, res ) => {
+  let sql = "Create table carts(id int auto_increment Primary key not null, foodId int not null, userId varchar(255), createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP )"
+
+  db.query( sql, ( err, result ) => {
+    if ( err ) throw err
+    res.json( result )
+  } )
+} )
+
+app.get( "/createDpTable", ( req, res ) => {
+  let sql = "Create table orders(id int auto_increment Primary key not null, foodId int not null, location varchar(255) not null, delivery_time timestamp not null, number_of_plates int(11) not null, special_description varchar(255), createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP, orderedBy varchar(255), tel varchar(255) not null, address varchar(255), userId varchar(255), delivered tinytin(1) not null )"
+
+  db.query( sql, ( err, result ) => {
+    if ( err ) throw err
+    res.json( result )
+  } )
+} )
+
 app.get( "/createDpTable", ( req, res ) => {
   let sql = "Create table orders(id int auto_increment Primary key not null, foodId int not null, location varchar(255) not null, delivery_time timestamp not null, number_of_plates int(11) not null, special_description varchar(255), createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP, orderedBy varchar(255), tel varchar(255) not null, address varchar(255), userId varchar(255), delivered tinytin(1) not null )"
 

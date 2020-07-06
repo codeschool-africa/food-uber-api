@@ -6,7 +6,8 @@ const router = express.Router()
 //controllers
 const { register, login, addProfile, getUsers, getAdmins, addAdmin, removeAdmin, logout, uploadDp, passwordRecovery, settings } = require( "../controllers/user" )
 const { addFood, getFoods, getFeaturedFoods, updateFood, deleteFood, getFood, search, uploadFoodImage, } = require( "../controllers/product" )
-const { placeOrder, getOrder, getOrders, markOrderAsDelivered, editOrder, deleteOrder } = require( "../controllers/orders" )
+const { placeOrder, getOrder, getOrders, markOrderAsDelivered, editOrder, deleteOrder, myOrders, getUserOrders, getFoodOrders } = require( "../controllers/orders" );
+const { addToCart, myCart, removeFromCart } = require( "../controllers/cart" );
 
 //users
 //route to register both admin and customer
@@ -122,5 +123,24 @@ router.get( "/order/:orderId", getOrder )
 
 // delivered orders
 router.post( "/mark-delivered-order/:orderId", markOrderAsDelivered )
+
+// get user orders
+router.get( "/my-orders", myOrders )
+
+// get specific user order
+router.get( "/user-orders/:userId", getUserOrders )
+
+// get specific food orders
+router.get( "/food-orders/:foodId", getFoodOrders )
+
+// cart
+// add to cart
+router.post( "/add-to-cart", addToCart )
+
+// remove from cart
+router.post( "/remove-from-cart", removeFromCart )
+
+// retrieve my carts
+router.get( "/my-cart", myCart )
 
 module.exports = router
