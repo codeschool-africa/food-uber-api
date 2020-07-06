@@ -2,7 +2,7 @@ const { validationResult } = require( 'express-validator' );
 const db = require( "../models/db" )
 
 exports.addToCart = async ( req, res ) => {
-    let sql = `insert into carts values (id,?,?,?)`
+    let sql = `insert into carts values (id,?,?,?,?)`
     let foodCheck = `select * from foods where id = '${req.params.foodId}'`
     let userCheck = `select * from users where id = '${req.session.userId}'`
     let cartCheck = `select * from carts where foodId = '${req.params.foodId}' and userId = '${req.session.userId}'`
@@ -21,7 +21,8 @@ exports.addToCart = async ( req, res ) => {
                             if ( outputs && outputs.length > 0 ) {
                                 res.status( 400 ).json( { msg: "Food already added to cart" } )
                             } else if ( outputs && outputs.length === 0 ) {
-                                db.query( sql, [req.params.foodId, req.session.userId, createdAt], ( err, results ) => {
+                                // console.log( result )
+                                db.query( sql, [req.params.foodId, result[0].name, req.session.userId, createdAt], ( err, results ) => {
                                     if ( err ) throw err
                                     if ( results ) {
                                         res.status( 200 ).json( { results, msg: "Food added to cart" } )
