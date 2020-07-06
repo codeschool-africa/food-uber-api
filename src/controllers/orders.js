@@ -145,6 +145,7 @@ exports.myOrders = async ( req, res ) => {
     let sql = `select * from orders where userId = '${req.session.userId}'`
     if ( req.session.isLoggedIn && req.session.userId ) {
         db.query( sql, ( err, results ) => {
+            if ( err ) throw err
             if ( results && results.length > 0 ) {
                 res.status( 200 ).json( { results, msg: "Your orders were retrieved successfully" } )
             } else if ( results && results.length === 0 ) {

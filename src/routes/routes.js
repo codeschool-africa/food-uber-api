@@ -135,10 +135,10 @@ router.get( "/food-orders/:foodId", getFoodOrders )
 
 // cart
 // add to cart
-router.post( "/add-to-cart", addToCart )
+router.post( "/add-to-cart/:foodId", addToCart )
 
 // remove from cart
-router.post( "/remove-from-cart", removeFromCart )
+router.post( "/remove-from-cart/:cartId", removeFromCart )
 
 // retrieve my carts
 router.get( "/my-cart", myCart )
