@@ -3,20 +3,28 @@ const path = require( "path" )
 const bodyParser = require( "body-parser" );
 const cors = require( "cors" )
 const cookieSession = require( 'cookie-session' );
+const fileUpload = require( "express-fileupload" )
 const db = require( "./src/models/db" )
 const router = require( "./src/routes/routes" )
 
 const app = express()
 
+app.use( express.static( path.join( __dirname, 'public' ) ) );
+
 //setting  cookie session
 app.use( cookieSession( {
   name: 'session',
   keys: ['key1', 'key2'],
-  maxAge: 192000 * 1000
+  maxAge: 1920000 * 1000
 } ) );
 
 // parse requests of content-type: application/json
 app.use( bodyParser.json() );
+
+//file upload
+app.use( fileUpload( {
+  limits: { fileSize: 50 * 1024 * 1024 },
+} ) )
 
 //cors handling
 app.use( cors() )
@@ -62,6 +70,15 @@ app.get( "/createFoodsTable", ( req, res ) => {
 } )
 
 app.get( "/createOrdersTable", ( req, res ) => {
+  let sql = "Create table orders(id int auto_increment Primary key not null, foodId int not null, location varchar(255) not null, delivery_time timestamp not null, number_of_plates int(11) not null, special_description varchar(255), createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP, orderedBy varchar(255), tel varchar(255) not null, address varchar(255), userId varchar(255), delivered tinytin(1) not null )"
+
+  db.query( sql, ( err, result ) => {
+    if ( err ) throw err
+    res.json( result )
+  } )
+} )
+
+app.get( "/createDpTable", ( req, res ) => {
   let sql = "Create table orders(id int auto_increment Primary key not null, foodId int not null, location varchar(255) not null, delivery_time timestamp not null, number_of_plates int(11) not null, special_description varchar(255), createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP, orderedBy varchar(255), tel varchar(255) not null, address varchar(255), userId varchar(255), delivered tinytin(1) not null )"
 
   db.query( sql, ( err, result ) => {

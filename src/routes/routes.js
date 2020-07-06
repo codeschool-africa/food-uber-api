@@ -4,7 +4,7 @@ const { check } = require( 'express-validator' );
 const router = express.Router()
 
 //controllers
-const { register, login, addProfile, getUsers, getAdmins, addAdmin, removeAdmin, logout, uploadDp } = require( "../controllers/user" )
+const { register, login, addProfile, getUsers, getAdmins, addAdmin, removeAdmin, logout, uploadDp, passwordRecovery, settings } = require( "../controllers/user" )
 const { addFood, getFoods, getFeaturedFoods, updateFood, deleteFood, getFood, search, uploadFoodImage, } = require( "../controllers/product" )
 const { placeOrder, getOrder, getOrders, markOrderAsDelivered, editOrder, deleteOrder } = require( "../controllers/orders" )
 
@@ -24,6 +24,17 @@ router.post( "/login", [
     check( 'email', 'Please include a valid email' ).trim().not().isEmpty(),
     check( 'password', 'Password is required' ).trim().not().isEmpty()
 ], login )
+
+// password recovery
+router.post( "/recover-password", [
+    check( "email", "Please include a valid email" ).isEmail()
+], passwordRecovery )
+
+// settings
+router.post( "/setting", [
+    check( "email", "Please include a valid email" ).isEmail(),
+    check( "password", "Please include a password" ).trim().isLength( { min: 6 } )
+], settings )
 
 // add/edit profile
 router.post( "/profile", [

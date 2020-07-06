@@ -81,6 +81,41 @@ exports.login = async ( req, res ) => {
     }
 }
 
+// forgot password
+exports.passwordRecovery = async ( req, res ) => {
+    let errors = validationResult( req )
+    let { email } = req.body
+    let password = `${Math.floor( Math.random() * 10000000 + 1 )}`
+    let hashedpassword = await bcrypt.hash( password, salt );
+    let sql = `update users set password = '${hashedpassword}'`
+    let emailCheck = `SELECT * from users where email = '${email}'`
+
+    if ( !errors.isEmpty() ) {
+        res.json( { errors: errors.array() } )
+    } else {
+        db.query( emailCheck, ( err, output ) => {
+            if ( err ) throw err
+            if ( output && output.length > 0 ) {
+                // update user password
+                db.query( sql, ( err, results ) => {
+                    if ( err ) throw err
+                    if ( results ) {
+                        // send an email to verify the change with a new password, will come bac to it
+                        res.json( { results, msg: `${password} is your new password` } )
+                    }
+                    else {
+                        res.status( 500 ).json( { msg: "Internal server error, please try again" } )
+                    }
+                } )
+            } else if ( output && output.length === 0 ) {
+                res.status( 404 ).json( { msg: `${email} wasn't registered, please register.` } )
+            } else {
+                res.status( 500 ).json( { msg: "Internal server error, please try again" } )
+            }
+        } )
+    }
+}
+
 // logout user
 exports.logout = async ( req, res ) => {
     if ( req.session.isLoggedIn === true ) {
@@ -121,9 +156,41 @@ exports.addProfile = async ( req, res ) => {
     }
 }
 
+// settings 
+// change email/password
+exports.settings = async ( req, res ) => {
+    const { email, newEmail, password, newPassword } = req.body
+    let errors = validationResult( req.body )
+
+
+}
+
 // upload profile image
 exports.uploadDp = async ( req, res ) => {
-    res.json( { msg: "hello world, image uploaded" } )
+    if ( req.session.isLoggedIn && req.session.userId ) {
+        // if ( !req.file ) {
+        //     res.json( { msg: "no file uploaded" } )
+        // } else {
+        //     let file = req.file.uploaded_image
+        //     let file_name = file.name
+        //     if ( file.mimetype == "image/jpeg" || file.mimetype == "image/png" ) {
+        //         file.mv( 'public/images/upload_images/' + file.name, ( err ) => {
+
+        //             if ( err ) throw err
+        //             // let sql = `insert`
+        //             // db.query( sql, ( err, result ) => {
+        //             //     if ( err ) throw err
+        //             //     res.json( { msg: "image uploaded", result } )
+        //             // } );
+        //             res.json( { msg: "file uploaded" } )
+        //         } );
+        //     } else {
+        //         res.status( 400 ).json( { msg: "Bad request" } )
+        //     }
+        // }
+    } else {
+        res.status( 403 ).json( { msg: "Unauthorized" } )
+    }
 }
 
 // get users on admins profile
