@@ -2,7 +2,7 @@ const { validationResult } = require( 'express-validator' );
 const db = require( "../models/db" )
 
 exports.addToCart = async ( req, res ) => {
-    let sql = `insert into carts values (id,?,?,?,?)`
+    let sql = `insert into carts values (id,?,?,?,?,?)`
     let foodCheck = `select * from foods where id = '${req.params.foodId}'`
     let userCheck = `select * from users where id = '${req.session.userId}'`
     let cartCheck = `select * from carts where foodId = '${req.params.foodId}' and userId = '${req.session.userId}'`
@@ -22,7 +22,7 @@ exports.addToCart = async ( req, res ) => {
                                 res.status( 400 ).json( { msg: "Food already added to cart" } )
                             } else if ( outputs && outputs.length === 0 ) {
                                 // console.log( result )
-                                db.query( sql, [req.params.foodId, result[0].name, req.session.userId, createdAt], ( err, results ) => {
+                                db.query( sql, [req.params.foodId, result[0].name, req.session.userId, createdAt, result[0].food_image], ( err, results ) => {
                                     if ( err ) throw err
                                     if ( results ) {
                                         res.status( 200 ).json( { results, msg: "Food added to cart" } )
@@ -95,5 +95,3 @@ exports.myCart = async ( req, res ) => {
         res.status( 403 ).json( { msg: "Unauthorized" } )
     }
 }
-
-// to do, will add image so when retrieved will come with everything

@@ -273,7 +273,7 @@ exports.uploadDp = async ( req, res ) => {
                     } else if ( err ) {
                         res.json( { msg: `${err}` } )
                     } else {
-                        let sql = `update users set dp_path = '${req.file.path}' where id = '${req.session.userId}'`
+                        let sql = `update users set dp_path = '${req.file.name}' where id = '${req.session.userId}'`
                         db.query( sql, ( err, results ) => {
                             if ( err ) throw err
                             if ( results ) {

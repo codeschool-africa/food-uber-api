@@ -1,5 +1,6 @@
 const { validationResult } = require( 'express-validator' );
 const multer = require( "multer" )
+const fs = require( "fs" )
 const db = require( "../models/db" )
 
 // add food by admin
@@ -58,7 +59,7 @@ exports.addFood = async ( req, res ) => {
                     res.json( { msg: `${err}` } )
                 } else {
                     console.log( req.file )
-                    db.query( sql, [name, description, category, cost, featured, createdAt, adminId, req.file.path], ( err, results ) => {
+                    db.query( sql, [name, description, category, cost, featured, createdAt, adminId, req.file.name], ( err, results ) => {
                         if ( err ) throw err
                         if ( results ) {
                             res.json( { results, msg: "Details uploaded successful" } )
@@ -139,28 +140,43 @@ exports.updateFoodImage = async ( req, res ) => {
 
     let foodCheck = `select * from foods where id = '${req.params.foodId}'`
 
+    let uploadImage = () => {
+        upload( req, res, err => {
+            if ( err instanceof multer.MulterError ) {
+                res.json( { msg: err } )
+            } else if ( err ) {
+                res.json( { msg: err } )
+            } else {
+                console.log( req.file )
+                let sql = `update foods set food_image = '${req.file.name}' where id = '${req.params.foodId}'`
+                db.query( sql, ( err, results ) => {
+                    if ( err ) throw err
+                    if ( results ) {
+                        res.status( 200 ).json( { results, msg: "Image was updated successfully" } )
+                    } else {
+                        res.status( 500 ).json( { msg: "Internal server error" } )
+                    }
+                } )
+            }
+        } )
+    }
+
     if ( req.session.isLoggedIn && ( req.session.role === "main-admin" || "admin" ) ) {
         db.query( foodCheck, ( err, output ) => {
             if ( err ) throw err
             if ( output && output.length > 0 ) {
-                upload( req, res, err => {
-                    if ( err instanceof multer.MulterError ) {
-                        res.json( { msg: err } )
-                    } else if ( err ) {
-                        res.json( { msg: err } )
-                    } else {
-                        console.log( req.file )
-                        let sql = `update foods set food_image = '${req.file.path}' where id = '${req.params.foodId}'`
-                        db.query( sql, ( err, results ) => {
-                            if ( err ) throw err
-                            if ( results ) {
-                                res.status( 200 ).json( { results, msg: "Image was updated successfully" } )
-                            } else {
-                                res.status( 500 ).json( { msg: "Internal server error" } )
-                            }
-                        } )
+                let deletedImage = output[0].food_image
+                const path = `./public/assets/uploads/food_images/${deletedImage}`
+                if ( deletedImage ) {
+                    try {
+                        fs.unlink( path )
+                        uploadImage()
+                    } catch ( error ) {
+                        res.status( 500 ).json( { msg: `Error: ${error}` } )
                     }
-                } )
+                } else {
+                    uploadImage()
+                }
             } else if ( output && output.length === 0 ) {
                 res.status( 404 ).json( { msg: "Food not found" } )
             } else {
