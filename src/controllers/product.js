@@ -10,71 +10,65 @@ exports.addFood = async ( req, res ) => {
     let adminId = req.session.userId
     let sql = `INSERT INTO foods values (id,?,?,?,?,?,?,?)`
 
+    // upload food image
+    // create storage
+    const storage = multer.diskStorage( {
+        destination: ( req, file, cb ) => {
+            cb( null, "./public/assets/uploads/food_images/" )
+        },
+        filename: ( req, file, cb ) => {
+            cb( null, file.fieldname + '-' + Date.now() + path.extname( file.originalname ) );
+        }
+    } )
+
+    // init upload variable
+    const upload = multer( {
+        storage: storage,
+        limits: { fileSize: 10000000 },
+        fileFilter: ( req, file, cb ) => {
+            checkFileType( file, cb )
+        }
+    } ).single( 'food_image' );
+
+    // check file type
+    const checkFileType = ( file, cb ) => {
+        // allowed extenstion
+        const filetypes = /jpeg|jpg|png/
+        // check the ext
+        const extname = filetypes.test( path.extname( file.originalname ).toLowerCase() )
+
+        // mimetype
+        const mimetype = filetypes.test( file.mimetype )
+
+        if ( extname && mimetype ) {
+            return cb( null, true )
+        } else {
+            return cb( 'Upload .png, .jpg and .jpeg only' )
+        }
+    }
+
     if ( req.session.isLoggedIn && ( req.session.role === "main-admin" || "admin" ) ) {
         if ( !errors.isEmpty() ) {
             res.json( { errors: errors.array() } )
         } else {
-            db.query( sql, [name, description, category, cost, featured, createdAt, adminId], ( err, results ) => {
-                if ( err ) throw err
-                if ( results ) {
-                    res.json( { results, msg: "Food added successful" } )
+            upload( req, res, err => {
+                if ( err instanceof multer.MulterError ) {
+                    res.json( { msg: `${err}` } )
+                } else if ( err ) {
+                    res.json( { msg: `${err}` } )
                 } else {
-                    res.status( 500 ).json( { msg: "Internal server error" } )
+                    console.log( req.file )
+                    db.query( sql, [name, description, category, cost, featured, createdAt, adminId, req.file.path], ( err, results ) => {
+                        if ( err ) throw err
+                        if ( results ) {
+                            res.json( { results, msg: "Details uploaded successful" } )
+                        } else {
+                            res.status( 500 ).json( { msg: "Internal server error" } )
+                        }
+                    } )
                 }
             } )
         }
-    } else {
-        res.status( 403 ).json( { msg: "Unauthorized" } )
-    }
-}
-
-// create storage
-const storage = multer.diskStorage( {
-    destination: "/public/assets/uploads/food_images/",
-    filename: function ( req, file, cb ) {
-        cb( null, file.fieldname + '-' + Date.now() + path.extname( file.originalname ) );
-    }
-} )
-
-// init upload variable
-const upload = multer( {
-    storage: storage,
-    limits: { fileSize: 10000000 },
-    fileFilter: function ( req, file, cb ) {
-        checkFileType( file, cb )
-    }
-} ).single( 'dp' );
-
-// check file type
-const checkFileType = ( file, cb ) => {
-    // allowed ext
-    const filetypes = /jpeg|jpg|png/
-    // chec the ext
-    const extname = filetypes.test( path.extname( file.originalname ).toLowerCase() )
-
-    // mimetype
-    const mimetype = filetypes.test( file.mimetype )
-
-    console.log( extname )
-
-    if ( extname && mimetype ) {
-        return cb( null, true )
-    } else {
-        return cb( 'Error: Images only' )
-    }
-}
-
-// upload food image
-exports.uploadFoodImage = async ( req, res ) => {
-    if ( req.session.isLoggedIn && ( req.session.role === "admin" || "main-admin" ) ) {
-        upload( req, res, ( err ) => {
-            if ( err ) {
-                res.json( { msg: `error occured: ${err}` } )
-            } else {
-                console.log( req.files )
-                res.json( { msg: `file uploaded`, results: req.files } )
-            }
-        } )
     } else {
         res.status( 403 ).json( { msg: "Unauthorized" } )
     }
@@ -83,15 +77,14 @@ exports.uploadFoodImage = async ( req, res ) => {
 // update food by admin
 exports.updateFood = async ( req, res ) => {
     const { name, description, category, cost, featured } = req.body
-    // let adminId = req.session.userId
     let sql = `update foods set name = '${name}', description = '${description}', category = '${category}', cost = '${cost}', featured = '${featured}' where id = '${req.params.foodId}'`
 
     let errors = validationResult( req )
 
-    if ( !errors.isEmpty() ) {
-        res.json( { errors: errors.array() } )
-    } else {
-        if ( req.session.isLoggedIn && ( req.session.role === "main-admin" || "admin" ) ) {
+    if ( req.session.isLoggedIn && ( req.session.role === "main-admin" || "admin" ) ) {
+        if ( !errors.isEmpty() ) {
+            res.json( { errors: errors.array() } )
+        } else {
             db.query( sql, ( err, results ) => {
                 if ( err ) throw err
                 if ( results ) {
@@ -100,9 +93,71 @@ exports.updateFood = async ( req, res ) => {
                     res.status( 500 ).json( { msg: "Internal server error" } )
                 }
             } )
-        } else {
-            res.status( 403 ).json( { msg: "Unauthorized" } )
         }
+    } else {
+        res.status( 403 ).json( { msg: "Unauthorized" } )
+    }
+}
+
+// upload food image
+exports.updateFoodImage = async ( req, res ) => {
+    // create storage
+    const storage = multer.diskStorage( {
+        destination: ( req, file, cb ) => {
+            cb( null, "./public/assets/uploads/dp/" )
+        },
+        filename: ( req, file, cb ) => {
+            cb( null, file.fieldname + '-' + Date.now() + path.extname( file.originalname ) );
+        }
+    } )
+
+    // init upload variable
+    const upload = multer( {
+        storage: storage,
+        limits: { fileSize: 10000000 },
+        fileFilter: ( req, file, cb ) => {
+            checkFileType( file, cb )
+        }
+    } ).single( 'dp' );
+
+    // check file type
+    const checkFileType = ( file, cb ) => {
+        // allowed extenstion
+        const filetypes = /jpeg|jpg|png/
+        // check the ext
+        const extname = filetypes.test( path.extname( file.originalname ).toLowerCase() )
+
+        // mimetype
+        const mimetype = filetypes.test( file.mimetype )
+
+        if ( extname && mimetype ) {
+            return cb( null, true )
+        } else {
+            return cb( 'Upload .png, .jpg and .jpeg only' )
+        }
+    }
+
+    if ( req.session.isLoggedIn && req.session.userId ) {
+        upload( req, res, err => {
+
+            if ( err instanceof multer.MulterError ) {
+                res.json( { msg: `${err}` } )
+            } else if ( err ) {
+                res.json( { msg: `${err}` } )
+            } else {
+                console.log( req.file )
+                let sql = `update users set dp_path = '${req.file.path}'`
+                db.query( sql, ( err, results ) => {
+                    if ( results ) {
+                        res.status( 200 ).json( { results, msg: "Image was uploaded successful" } )
+                    } else {
+                        res.status( 500 ).json( { msg: "Internal server error" } )
+                    }
+                } )
+            }
+        } )
+    } else {
+        res.status( 403 ).json( { msg: "Unauthorized" } )
     }
 }
 

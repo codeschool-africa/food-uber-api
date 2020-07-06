@@ -1,11 +1,12 @@
 const express = require( "express" )
 const { check } = require( 'express-validator' );
+const multer = require( "multer" )
 
 const router = express.Router()
 
 //controllers
-const { register, login, addProfile, getUsers, getAdmins, addAdmin, removeAdmin, logout, uploadDp, passwordRecovery, settings, sendMail } = require( "../controllers/user" )
-const { addFood, getFoods, getFeaturedFoods, updateFood, deleteFood, getFood, search, uploadFoodImage, } = require( "../controllers/product" )
+const { register, login, addProfile, getUsers, getAdmins, addAdmin, removeAdmin, logout, uploadDp, passwordRecovery, settings } = require( "../controllers/user" )
+const { addFood, getFoods, getFeaturedFoods, updateFood, updateFoodImage, deleteFood, getFood, search } = require( "../controllers/product" )
 const { placeOrder, getOrder, getOrders, markOrderAsDelivered, editOrder, deleteOrder, myOrders, getUserOrders, getFoodOrders } = require( "../controllers/orders" );
 const { addToCart, myCart, removeFromCart } = require( "../controllers/cart" );
 
@@ -69,14 +70,14 @@ router.post( "/add-food", [
     check( "cost", "Please Include cost" ).trim().not().isEmpty()
 ], addFood )
 
-// upload food-image
-router.post( "/upload-food-image", uploadFoodImage )
-
 //admin updates food
 router.post( "/update-food/:foodId", [
     check( "name", "Please include food name" ).trim().not().isEmpty(),
     check( "cost", "please include cost of this food" ).trim().not().isEmpty()
 ], updateFood )
+
+// admin updates foodImage
+router.post( "/update-food-image/:foodId", updateFoodImage )
 
 //admin deletes food
 router.post( "/delete-food/:foodId", deleteFood )
@@ -142,9 +143,5 @@ router.post( "/remove-from-cart/:cartId", removeFromCart )
 
 // retrieve my carts
 router.get( "/my-cart", myCart )
-
-// temporary route
-// send email
-// router.post( "/mail", sendMail )
 
 module.exports = router

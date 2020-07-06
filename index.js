@@ -3,10 +3,8 @@ const path = require( "path" )
 const bodyParser = require( "body-parser" );
 const cors = require( "cors" )
 const cookieSession = require( 'cookie-session' );
-const fileUpload = require( "express-fileupload" )
 const db = require( "./src/models/db" )
 const router = require( "./src/routes/routes" );
-const { static } = require( "express" );
 
 const app = express()
 
@@ -31,7 +29,7 @@ app.use( "/api", router )
 // parse requests of content-type: application/x-www-form-urlencoded
 app.use( bodyParser.urlencoded( { extended: false } ) );
 
-app.use( express.static( "/public" ) )
+app.use( express.static( path.join( __dirname, "/public" ) ) )
 
 // landing page of the api
 app.get( "/", ( req, res ) => {
@@ -87,9 +85,13 @@ app.get( "/createCartTable", ( req, res ) => {
 
 const PORT = process.env.PORT || 5000
 
-app.listen( PORT, () => console.log( `Server running on port ${PORT}` ) )
+app.listen( PORT, ( err ) => {
+  if ( err ) {
+    console.log( err )
+  } else {
+    console.log( `Server running on port ${PORT}` )
+  }
+} )
 
-//todo
+// todo
 // add verification via emails to verify users (right??)
-
-// also try to deploy the api and run it if it works (herou)

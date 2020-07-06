@@ -33,7 +33,7 @@ exports.register = async ( req, res ) => {
             }
             else {
                 //add user
-                let sql = `INSERT INTO users values (uuid(),?,?,?,?, null,?, false)`
+                let sql = `INSERT INTO users values (uuid(),?,?,?,?, null,?, false,null, null,null)`
                 db.query( sql, [name, email, tel, hashedpassword, createdAt], ( err, result ) => {
                     if ( err ) throw err
                     if ( result ) {
@@ -223,53 +223,61 @@ exports.settings = async ( req, res ) => {
     }
 }
 
-// create storage
-const storage = multer.diskStorage( {
-    destination: ( req, file, cb ) => {
-        cb(null, "/public/assets/uploads/dp/")
-    },
-    filename: ( req, file, cb ) => {
-        cb( "Error: Unhadled request", file.fieldname + '-' + Date.now() + path.extname( file.originalname ) );
-    }
-} )
-
-// init upload variable
-const upload = multer( {
-    storage,
-    limits: { fileSize: 10000000 },
-    fileFilter: ( req, file, cb ) => {
-        checkFileType( file, cb )
-    }
-} ).single('dp');
-
-// check file type
-const checkFileType = ( file, cb ) => {
-    // allowed ext
-    const filetypes = /jpeg|jpg|png/
-    // chec the ext
-    const extname = filetypes.test( path.extname( file.originalname ).toLowerCase() )
-
-    // mimetype
-    const mimetype = filetypes.test( file.mimetype )
-
-    console.log( extname )
-
-    if ( extname && mimetype ) {
-        return cb( null, true )
-    } else {
-        return cb( 'Error: Upload .png, .jpg and .jpeg only' )
-    }
-}
-
 // upload profile image
 exports.uploadDp = async ( req, res ) => {
+    // create storage
+    const storage = multer.diskStorage( {
+        destination: ( req, file, cb ) => {
+            cb( null, "./public/assets/uploads/dp/" )
+        },
+        filename: ( req, file, cb ) => {
+            cb( null, file.fieldname + '-' + Date.now() + path.extname( file.originalname ) );
+        }
+    } )
+
+    // init upload variable
+    const upload = multer( {
+        storage: storage,
+        limits: { fileSize: 10000000 },
+        fileFilter: ( req, file, cb ) => {
+            checkFileType( file, cb )
+        }
+    } ).single( 'dp' );
+
+    // check file type
+    const checkFileType = ( file, cb ) => {
+        // allowed extenstion
+        const filetypes = /jpeg|jpg|png/
+        // check the ext
+        const extname = filetypes.test( path.extname( file.originalname ).toLowerCase() )
+
+        // mimetype
+        const mimetype = filetypes.test( file.mimetype )
+
+        if ( extname && mimetype ) {
+            return cb( null, true )
+        } else {
+            return cb( 'Upload .png, .jpg and .jpeg only' )
+        }
+    }
+
     if ( req.session.isLoggedIn && req.session.userId ) {
-        upload( req, res, ( err ) => {
-            if ( err ) {
-                res.json( { msg: `error occured: ${err}` } )
+        upload( req, res, err => {
+
+            if ( err instanceof multer.MulterError ) {
+                res.json( { msg: `${err}` } )
+            } else if ( err ) {
+                res.json( { msg: `${err}` } )
             } else {
                 console.log( req.file )
-                res.json( { msg: `file uploaded` } )
+                let sql = `update users set dp_path = '${req.file.path}' where id = '${req.session.userId}'`
+                db.query( sql, ( err, results ) => {
+                    if ( results ) {
+                        res.status( 200 ).json( { results, msg: "Image was uploaded successful" } )
+                    } else {
+                        res.status( 500 ).json( { msg: "Internal server error" } )
+                    }
+                } )
             }
         } )
     } else {
