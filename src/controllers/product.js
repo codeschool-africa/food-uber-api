@@ -1,4 +1,5 @@
 const { validationResult } = require( 'express-validator' );
+const multer = require( "multer" )
 const db = require( "../models/db" )
 
 // add food by admin
@@ -27,9 +28,56 @@ exports.addFood = async ( req, res ) => {
     }
 }
 
+// create storage
+const storage = multer.diskStorage( {
+    destination: "/public/assets/uploads/food_images/",
+    filename: function ( req, file, cb ) {
+        cb( null, file.fieldname + '-' + Date.now() + path.extname( file.originalname ) );
+    }
+} )
+
+// init upload variable
+const upload = multer( {
+    storage: storage,
+    limits: { fileSize: 10000000 },
+    fileFilter: function ( req, file, cb ) {
+        checkFileType( file, cb )
+    }
+} ).single( 'dp' );
+
+// check file type
+const checkFileType = ( file, cb ) => {
+    // allowed ext
+    const filetypes = /jpeg|jpg|png/
+    // chec the ext
+    const extname = filetypes.test( path.extname( file.originalname ).toLowerCase() )
+
+    // mimetype
+    const mimetype = filetypes.test( file.mimetype )
+
+    console.log( extname )
+
+    if ( extname && mimetype ) {
+        return cb( null, true )
+    } else {
+        return cb( 'Error: Images only' )
+    }
+}
+
 // upload food image
 exports.uploadFoodImage = async ( req, res ) => {
-    res.json( { msg: "image uploaded" } )
+    if ( req.session.isLoggedIn && ( req.session.role === "admin" || "main-admin" ) ) {
+        upload( req, res, ( err ) => {
+            if ( err ) {
+                res.json( { msg: `error occured: ${err}` } )
+            } else {
+                console.log( req.files )
+                res.json( { msg: `file uploaded`, results: req.files } )
+            }
+        } )
+    } else {
+        res.status( 403 ).json( { msg: "Unauthorized" } )
+    }
 }
 
 // update food by admin

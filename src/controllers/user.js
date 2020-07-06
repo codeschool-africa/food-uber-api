@@ -1,6 +1,8 @@
 const bcrypt = require( "bcryptjs" )
-const { validationResult } = require( 'express-validator' );
+const { validationResult, check } = require( 'express-validator' );
 // const nodemailer = require( "nodemailer" )
+const multer = require( "multer" )
+const path = require( "path" )
 const db = require( "../models/db" )
 
 let salt = bcrypt.genSaltSync( 12 );
@@ -221,10 +223,55 @@ exports.settings = async ( req, res ) => {
     }
 }
 
+// create storage
+const storage = multer.diskStorage( {
+    destination: ( req, file, cb ) => {
+        cb(null, "/public/assets/uploads/dp/")
+    },
+    filename: ( req, file, cb ) => {
+        cb( "Error: Unhadled request", file.fieldname + '-' + Date.now() + path.extname( file.originalname ) );
+    }
+} )
+
+// init upload variable
+const upload = multer( {
+    storage,
+    limits: { fileSize: 10000000 },
+    fileFilter: ( req, file, cb ) => {
+        checkFileType( file, cb )
+    }
+} ).single('dp');
+
+// check file type
+const checkFileType = ( file, cb ) => {
+    // allowed ext
+    const filetypes = /jpeg|jpg|png/
+    // chec the ext
+    const extname = filetypes.test( path.extname( file.originalname ).toLowerCase() )
+
+    // mimetype
+    const mimetype = filetypes.test( file.mimetype )
+
+    console.log( extname )
+
+    if ( extname && mimetype ) {
+        return cb( null, true )
+    } else {
+        return cb( 'Error: Upload .png, .jpg and .jpeg only' )
+    }
+}
+
 // upload profile image
 exports.uploadDp = async ( req, res ) => {
     if ( req.session.isLoggedIn && req.session.userId ) {
-
+        upload( req, res, ( err ) => {
+            if ( err ) {
+                res.json( { msg: `error occured: ${err}` } )
+            } else {
+                console.log( req.file )
+                res.json( { msg: `file uploaded` } )
+            }
+        } )
     } else {
         res.status( 403 ).json( { msg: "Unauthorized" } )
     }

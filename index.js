@@ -5,7 +5,8 @@ const cors = require( "cors" )
 const cookieSession = require( 'cookie-session' );
 const fileUpload = require( "express-fileupload" )
 const db = require( "./src/models/db" )
-const router = require( "./src/routes/routes" )
+const router = require( "./src/routes/routes" );
+const { static } = require( "express" );
 
 const app = express()
 
@@ -21,11 +22,6 @@ app.use( cookieSession( {
 // parse requests of content-type: application/json
 app.use( bodyParser.json() );
 
-//file upload
-app.use( fileUpload( {
-  limits: { fileSize: 50 * 1024 * 1024 },
-} ) )
-
 //cors handling
 app.use( cors() )
 
@@ -34,6 +30,8 @@ app.use( "/api", router )
 
 // parse requests of content-type: application/x-www-form-urlencoded
 app.use( bodyParser.urlencoded( { extended: false } ) );
+
+app.use( express.static( "/public" ) )
 
 // landing page of the api
 app.get( "/", ( req, res ) => {
@@ -50,7 +48,7 @@ app.get( "/createdb", ( req, res ) => {
   } )
 } )
 
-// create users table
+// create various tables
 app.get( "/createUsersTable", ( req, res ) => {
   let sql = "Create table users(id varchar(36) Primary key, name varchar(255), email varchar(255), tel varchar(255), password varchar(255), role varchar(255), createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP, confirmed tinyint(1) default false )"
 
@@ -93,7 +91,5 @@ app.listen( PORT, () => console.log( `Server running on port ${PORT}` ) )
 
 //todo
 // add verification via emails to verify users (right??)
-// create profile-images table
-// create food images table
 
 // also try to deploy the api and run it if it works (herou)
