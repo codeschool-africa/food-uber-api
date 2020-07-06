@@ -87,31 +87,13 @@ app.get( "/createCartTable", ( req, res ) => {
   } )
 } )
 
-app.get( "/createDpTable", ( req, res ) => {
-  let sql = "Create table orders(id int auto_increment Primary key not null, foodId int not null, location varchar(255) not null, delivery_time timestamp not null, number_of_plates int(11) not null, special_description varchar(255), createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP, orderedBy varchar(255), tel varchar(255) not null, address varchar(255), userId varchar(255), delivered tinytin(1) not null )"
-
-  db.query( sql, ( err, result ) => {
-    if ( err ) throw err
-    res.json( result )
-  } )
-} )
-
-app.get( "/createDpTable", ( req, res ) => {
-  let sql = "Create table orders(id int auto_increment Primary key not null, foodId int not null, location varchar(255) not null, delivery_time timestamp not null, number_of_plates int(11) not null, special_description varchar(255), createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP, orderedBy varchar(255), tel varchar(255) not null, address varchar(255), userId varchar(255), delivered tinytin(1) not null )"
-
-  db.query( sql, ( err, result ) => {
-    if ( err ) throw err
-    res.json( result )
-  } )
-} )
-
 const PORT = process.env.PORT || 5000
 
 app.listen( PORT, () => console.log( `Server running on port ${PORT}` ) )
 
 //todo
 // add verification via emails to verify users (right??)
-//create profile-images table
-//create food images table
+// create profile-images table
+// create food images table
 
-//also try to deploy the api and run it if it works
+// also try to deploy the api and run it if it works (herou)

@@ -323,3 +323,11 @@ exports.removeAdmin = async ( req, res ) => {
         res.status( 403 ).json( { msg: 'Unauthorized' } )
     }
 }
+
+// send mail route
+// exports.sendMail = async ( req, res ) => {
+//     let transporter = nodemailer.createTransport( {
+
+//     } )
+//     transporter.sendMail()
+// }

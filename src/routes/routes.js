@@ -4,7 +4,7 @@ const { check } = require( 'express-validator' );
 const router = express.Router()
 
 //controllers
-const { register, login, addProfile, getUsers, getAdmins, addAdmin, removeAdmin, logout, uploadDp, passwordRecovery, settings } = require( "../controllers/user" )
+const { register, login, addProfile, getUsers, getAdmins, addAdmin, removeAdmin, logout, uploadDp, passwordRecovery, settings, sendMail } = require( "../controllers/user" )
 const { addFood, getFoods, getFeaturedFoods, updateFood, deleteFood, getFood, search, uploadFoodImage, } = require( "../controllers/product" )
 const { placeOrder, getOrder, getOrders, markOrderAsDelivered, editOrder, deleteOrder, myOrders, getUserOrders, getFoodOrders } = require( "../controllers/orders" );
 const { addToCart, myCart, removeFromCart } = require( "../controllers/cart" );
@@ -142,5 +142,9 @@ router.post( "/remove-from-cart/:cartId", removeFromCart )
 
 // retrieve my carts
 router.get( "/my-cart", myCart )
+
+// temporary route
+// send email
+// router.post( "/mail", sendMail )
 
 module.exports = router

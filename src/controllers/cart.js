@@ -96,4 +96,4 @@ exports.myCart = async ( req, res ) => {
     }
 }
 
-// to do, will add food name in the cart and image so when retrieved will come with everything
+// to do, will add image so when retrieved will come with everything
