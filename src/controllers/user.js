@@ -261,23 +261,33 @@ exports.uploadDp = async ( req, res ) => {
         }
     }
 
-    if ( req.session.isLoggedIn && req.session.userId ) {
-        upload( req, res, err => {
+    let userCheck = `select * from users where id = '${req.session.userId}'`
 
-            if ( err instanceof multer.MulterError ) {
-                res.json( { msg: `${err}` } )
-            } else if ( err ) {
-                res.json( { msg: `${err}` } )
-            } else {
-                console.log( req.file )
-                let sql = `update users set dp_path = '${req.file.path}' where id = '${req.session.userId}'`
-                db.query( sql, ( err, results ) => {
-                    if ( results ) {
-                        res.status( 200 ).json( { results, msg: "Image was uploaded successful" } )
+    if ( req.session.isLoggedIn && req.session.userId ) {
+        db.query( userCheck, ( err, output ) => {
+            if ( err ) throw err
+            if ( output && output.length > 0 ) {
+                upload( req, res, err => {
+                    if ( err instanceof multer.MulterError ) {
+                        res.json( { msg: `${err}` } )
+                    } else if ( err ) {
+                        res.json( { msg: `${err}` } )
                     } else {
-                        res.status( 500 ).json( { msg: "Internal server error" } )
+                        let sql = `update users set dp_path = '${req.file.path}' where id = '${req.session.userId}'`
+                        db.query( sql, ( err, results ) => {
+                            if ( err ) throw err
+                            if ( results ) {
+                                res.status( 200 ).json( { results, msg: "Image was uploaded successful" } )
+                            } else {
+                                res.status( 500 ).json( { msg: "Internal server error" } )
+                            }
+                        } )
                     }
                 } )
+            } else if ( output && output.length === 0 ) {
+                res.status( 404 ).json( { msg: "User not found" } )
+            } else {
+                res.status( 500 ).json( { msg: "Internal server error, please try again" } )
             }
         } )
     } else {
@@ -378,11 +388,3 @@ exports.removeAdmin = async ( req, res ) => {
         res.status( 403 ).json( { msg: 'Unauthorized' } )
     }
 }
-
-// send mail route
-// exports.sendMail = async ( req, res ) => {
-//     let transporter = nodemailer.createTransport( {
-
-//     } )
-//     transporter.sendMail()
-// }

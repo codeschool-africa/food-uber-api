@@ -104,7 +104,7 @@ exports.updateFoodImage = async ( req, res ) => {
     // create storage
     const storage = multer.diskStorage( {
         destination: ( req, file, cb ) => {
-            cb( null, "./public/assets/uploads/dp/" )
+            cb( null, "./public/assets/uploads/food_images/" )
         },
         filename: ( req, file, cb ) => {
             cb( null, file.fieldname + '-' + Date.now() + path.extname( file.originalname ) );
@@ -118,7 +118,7 @@ exports.updateFoodImage = async ( req, res ) => {
         fileFilter: ( req, file, cb ) => {
             checkFileType( file, cb )
         }
-    } ).single( 'dp' );
+    } ).single( 'food_image' );
 
     // check file type
     const checkFileType = ( file, cb ) => {
@@ -137,23 +137,34 @@ exports.updateFoodImage = async ( req, res ) => {
         }
     }
 
-    if ( req.session.isLoggedIn && req.session.userId ) {
-        upload( req, res, err => {
+    let foodCheck = `select * from foods where id = '${req.params.foodId}'`
 
-            if ( err instanceof multer.MulterError ) {
-                res.json( { msg: `${err}` } )
-            } else if ( err ) {
-                res.json( { msg: `${err}` } )
-            } else {
-                console.log( req.file )
-                let sql = `update users set dp_path = '${req.file.path}'`
-                db.query( sql, ( err, results ) => {
-                    if ( results ) {
-                        res.status( 200 ).json( { results, msg: "Image was uploaded successful" } )
+    if ( req.session.isLoggedIn && ( req.session.role === "main-admin" || "admin" ) ) {
+        db.query( foodCheck, ( err, output ) => {
+            if ( err ) throw err
+            if ( output && output.length > 0 ) {
+                upload( req, res, err => {
+                    if ( err instanceof multer.MulterError ) {
+                        res.json( { msg: err } )
+                    } else if ( err ) {
+                        res.json( { msg: err } )
                     } else {
-                        res.status( 500 ).json( { msg: "Internal server error" } )
+                        console.log( req.file )
+                        let sql = `update foods set food_image = '${req.file.path}' where id = '${req.params.foodId}'`
+                        db.query( sql, ( err, results ) => {
+                            if ( err ) throw err
+                            if ( results ) {
+                                res.status( 200 ).json( { results, msg: "Image was updated successfully" } )
+                            } else {
+                                res.status( 500 ).json( { msg: "Internal server error" } )
+                            }
+                        } )
                     }
                 } )
+            } else if ( output && output.length === 0 ) {
+                res.status( 404 ).json( { msg: "Food not found" } )
+            } else {
+                res.status( 500 ).json( { msg: "Internal server error" } )
             }
         } )
     } else {
