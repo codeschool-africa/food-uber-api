@@ -160,34 +160,71 @@ exports.addProfile = async ( req, res ) => {
 // change email/password
 exports.settings = async ( req, res ) => {
     const { email, newEmail, password, newPassword } = req.body
-    let errors = validationResult( req.body )
+    let errors = validationResult( req )
 
+    let newHashedPassword = await bcrypt.hash( newPassword, salt );
 
+    let userCheck = `SELECT * from users where email = '${email}'`
+    let emailCheck = `SELECT * from users where email = '${newEmail}'`
+    let sql = `update users set email = '${newEmail}', password = '${newHashedPassword}' where id = '${req.session.userId}'`
+
+    if ( req.session.isLoggedIn && req.session.userId ) {
+        if ( !errors.isEmpty() ) {
+            res.json( { errors: errors.array() } )
+        } else {
+            db.query( userCheck, async ( err, result ) => {
+                if ( err ) throw err
+                if ( result && result.length > 0 ) {
+                    let hashedpassword = result[0].password
+                    let isMatch = await bcrypt.compare( password, hashedpassword )
+                    if ( isMatch ) {
+                        if ( newEmail === email ) {
+                            db.query( sql, ( err, results ) => {
+                                if ( err ) throw err
+                                if ( results ) {
+                                    res.json( { results } )
+                                } else {
+                                    res.status( 500 ).json( { msg: "Internal server error" } )
+                                }
+                            } )
+                        } else if ( newEmail != email ) {
+                            db.query( emailCheck, ( err, output ) => {
+                                if ( err ) throw err
+                                if ( output && output.length > 0 ) {
+                                    res.status( 403 ).json( { msg: "Email already in use" } )
+                                } else if ( output && output.length === 0 ) {
+                                    db.query( sql, ( err, results ) => {
+                                        if ( err ) throw err
+                                        if ( results ) {
+                                            res.json( { results } )
+                                        } else {
+                                            res.status( 500 ).json( { msg: "Internal server error" } )
+                                        }
+                                    } )
+                                } else {
+                                    res.status( 500 ).json( { msg: 'Internal server error, please try again' } )
+                                }
+                            } )
+                        }
+                    } else if ( result && result.length === 0 ) {
+                        res.status( 403 ).json( { msg: "Wrong Credentials" } )
+                    } else {
+                        res.status( 500 ).json( { msg: "Internal server error" } )
+                    }
+                } else {
+                    res.status( 500 ).json( { msg: "Wrong Credentials" } )
+                }
+            } )
+        }
+    } else {
+        res.status( 403 ).json( { msg: "Unauthorized" } )
+    }
 }
 
 // upload profile image
 exports.uploadDp = async ( req, res ) => {
     if ( req.session.isLoggedIn && req.session.userId ) {
-        // if ( !req.file ) {
-        //     res.json( { msg: "no file uploaded" } )
-        // } else {
-        //     let file = req.file.uploaded_image
-        //     let file_name = file.name
-        //     if ( file.mimetype == "image/jpeg" || file.mimetype == "image/png" ) {
-        //         file.mv( 'public/images/upload_images/' + file.name, ( err ) => {
 
-        //             if ( err ) throw err
-        //             // let sql = `insert`
-        //             // db.query( sql, ( err, result ) => {
-        //             //     if ( err ) throw err
-        //             //     res.json( { msg: "image uploaded", result } )
-        //             // } );
-        //             res.json( { msg: "file uploaded" } )
-        //         } );
-        //     } else {
-        //         res.status( 400 ).json( { msg: "Bad request" } )
-        //     }
-        // }
     } else {
         res.status( 403 ).json( { msg: "Unauthorized" } )
     }

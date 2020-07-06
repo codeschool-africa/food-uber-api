@@ -33,7 +33,9 @@ router.post( "/recover-password", [
 // settings
 router.post( "/setting", [
     check( "email", "Please include a valid email" ).isEmail(),
-    check( "password", "Please include a password" ).trim().isLength( { min: 6 } )
+    check( "newEmail", "Please enter a valid email" ).isEmail(),
+    check( "password", "Please include a password" ).trim().isLength( { min: 6 } ),
+    check( "newPassword", "Please include a password" ).trim().isLength( { min: 6 } )
 ], settings )
 
 // add/edit profile
