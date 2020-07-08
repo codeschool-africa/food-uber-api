@@ -1,9 +1,9 @@
 const bcrypt = require( "bcryptjs" )
 const { validationResult, check } = require( 'express-validator' );
-// const nodemailer = require( "nodemailer" )
 const multer = require( "multer" )
 const path = require( "path" )
 const db = require( "../models/db" )
+const transporter = require( "../models/mailTransporter" )
 
 let salt = bcrypt.genSaltSync( 12 );
 
@@ -42,7 +42,22 @@ exports.register = async ( req, res ) => {
                             req.session.userId = output[0].id
                             req.session.role = output[0].role
                             req.session.isLoggedIn = true
-                            res.json( { output, session: req.session } )
+                            transporter.sendMail(
+                                {
+                                    to: email,
+                                    subject: "Welcome to Faraja food uber",
+                                    html: `<p>Hello ${name}, welcome to faraja food uber, login and start exploring our best foods available</p>`
+                                },
+                                ( error, info ) => {
+                                    if ( error ) {
+                                        // console.log( error )
+                                        res.json( { result, msg: `Error: ${error}` } )
+                                    } else {
+                                        // console.log( info )
+                                        res.json( { result, msg: `Your account was registered successfully, check your email` } )
+                                    }
+                                }
+                            )
                         } )
                     } else {
                         res.status( 500 ).json( { result, msg: "Internal server error" } )
@@ -99,11 +114,26 @@ exports.passwordRecovery = async ( req, res ) => {
             if ( err ) throw err
             if ( output && output.length > 0 ) {
                 // update user password
+                console.log( output )
                 db.query( sql, ( err, results ) => {
                     if ( err ) throw err
                     if ( results ) {
-                        // send an email to verify the change with a new password, will come bac to it
-                        res.json( { results, msg: `${password} is your new password` } )
+                        transporter.sendMail(
+                            {
+                                to: email,
+                                subject: "Password recovery",
+                                html: `<p>Hello <strong>${output[0].name}</strong>, your new password is ${password}<br /> <br />
+                                    You can change the password while you're logged in anytime
+                                </p>`
+                            },
+                            ( error, info ) => {
+                                if ( !error ) {
+                                    res.json( { results, msg: `An email was sent to ${email}` } )
+                                } else {
+                                    res.json( { results, msg: `Error: ${error}` } )
+                                }
+                            }
+                        )
                     }
                     else {
                         res.status( 500 ).json( { msg: "Internal server error, please try again" } )
@@ -387,4 +417,8 @@ exports.removeAdmin = async ( req, res ) => {
     } else {
         res.status( 403 ).json( { msg: 'Unauthorized' } )
     }
+}
+
+exports.notification = async ( req, res ) => {
+    res.json( { msg: "Notifications" } )
 }

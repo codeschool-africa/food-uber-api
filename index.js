@@ -92,6 +92,3 @@ app.listen( PORT, ( err ) => {
     console.log( `Server running on port ${PORT}` )
   }
 } )
-
-// todo
-// add verification via emails to verify users (right??)
