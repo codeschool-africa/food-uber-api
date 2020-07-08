@@ -419,6 +419,6 @@ exports.removeAdmin = async ( req, res ) => {
     }
 }
 
-exports.notification = async ( req, res ) => {
+exports.notifications = async ( req, res ) => {
     res.json( { msg: "Notifications" } )
 }

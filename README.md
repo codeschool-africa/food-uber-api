@@ -17,7 +17,7 @@ create config folder and db.config.js file with mysql credentials
 
     module.exports = dbConfig
 
-also for the emails to wor, create email.config.js in the config folder with your email credentials
+also for the emails to work, create email.config.js in the config folder with your email credentials
 
     module.exports = {
         username: "youremail@email.com", // your email

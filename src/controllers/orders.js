@@ -6,41 +6,45 @@ exports.placeOrder = async ( req, res ) => {
     const errors = validationResult( req )
     let createdAt = new Date()
 
-    let sql = `insert into orders values (id,?,?,?,?,?,?,?,?,?,?,?)`
+    let sql = `insert into orders values (id,?,?,?,?,?,?,?,?,?,?,?,0)`
 
     let foodCheck = `select * from foods where id = '${req.params.foodId}'`
 
     if ( !errors.isEmpty() ) {
         res.json( { errors: errors.array() } )
     } else {
-        db.query( foodCheck, ( err, results ) => {
-            if ( err ) throw err
-            if ( results && results.length > 0 ) {
-                if ( req.session.isLoggedIn && req.session.userId ) {
-                    let userCheck = `select * from users where id = '${req.session.userId}'`
-                    db.query( userCheck, ( err, output ) => {
-                        if ( err ) throw err
-                        if ( output && output.length > 0 ) {
-                            db.query( sql, [req.params.foodId, location, delivery_time, number_of_plates, special_description, createdAt, output[0].name, tel, address, req.session.userId, 0], ( err, results ) => {
-                                if ( err ) throw err
-                                res.status( 200 ).json( { results, msg: 'Order placed successfully' } )
-                            } )
-                        } else {
-                            res.status( 500 ).json( { msg: "Internal server error" } )
-                        }
-                    } )
+        if ( ( createdAt.getTime() + 1800000 ) > new Date( delivery_time ).getTime() ) {
+            res.json( { msg: "Please enter a valid time" } )
+        } else {
+            db.query( foodCheck, ( err, results ) => {
+                if ( err ) throw err
+                if ( results && results.length > 0 ) {
+                    if ( req.session.isLoggedIn && req.session.userId ) {
+                        let userCheck = `select * from users where id = '${req.session.userId}'`
+                        db.query( userCheck, ( err, output ) => {
+                            if ( err ) throw err
+                            if ( output && output.length > 0 ) {
+                                db.query( sql, [req.params.foodId, location, delivery_time, number_of_plates, special_description, createdAt, output[0].name, tel, address, req.session.userId, 0], ( err, results ) => {
+                                    if ( err ) throw err
+                                    res.status( 200 ).json( { results, msg: 'Order placed successfully' } )
+                                } )
+                            } else {
+                                res.status( 500 ).json( { msg: "Internal server error" } )
+                            }
+                        } )
+                    } else {
+                        db.query( sql, [req.params.foodId, location, delivery_time, number_of_plates, special_description, createdAt, orderedBy, tel, address, null, 0], ( err, results ) => {
+                            if ( err ) throw err
+                            res.status( 200 ).json( { results, msg: 'Order placed successfully' } )
+                        } )
+                    }
+                } else if ( results && results.length === 0 ) {
+                    res.status( 404 ).json( { msg: "Food not found, this order can't be placed" } )
                 } else {
-                    db.query( sql, [req.params.foodId, location, delivery_time, number_of_plates, special_description, createdAt, orderedBy, tel, address, null, 0], ( err, results ) => {
-                        if ( err ) throw err
-                        res.status( 200 ).json( { results, msg: 'Order placed successfully' } )
-                    } )
+                    res.status( 500 ).json( { msg: "Internal server error, please try again" } )
                 }
-            } else if ( results && results.length === 0 ) {
-                res.status( 404 ).json( { msg: "Food not found, this order can't be placed" } )
-            } else {
-                res.status( 500 ).json( { msg: "Internal server error, please try again" } )
-            }
-        } )
+            } )
+        }
     }
 }
 
