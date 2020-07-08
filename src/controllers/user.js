@@ -329,7 +329,7 @@ exports.uploadDp = async ( req, res ) => {
 exports.getUsers = async ( req, res ) => {
     let sql = "select * from users order by createdAt desc"
     let session = req.session
-    if ( session.isLoggedIn && ( session.role === "admin" || "main-admin" ) ) {
+    if ( session.isLoggedIn && session.role === "admin" || session.role === "main-admin" ) {
         db.query( sql, ( err, results ) => {
             if ( err ) throw err
             if ( results && results.length > 0 ) {
@@ -349,7 +349,7 @@ exports.getUsers = async ( req, res ) => {
 exports.getAdmins = async ( req, res ) => {
     let sql = `select * from users where role = 'admin' order by createdAt desc`
     let session = req.session
-    if ( session.isLoggedIn && ( session.role === "main-admin" ) ) {
+    if ( session.isLoggedIn && session.role === "main-admin" ) {
         db.query( sql, ( err, results ) => {
             if ( err ) throw err
             if ( results && results.length > 0 ) {
@@ -417,8 +417,4 @@ exports.removeAdmin = async ( req, res ) => {
     } else {
         res.status( 403 ).json( { msg: 'Unauthorized' } )
     }
-}
-
-exports.notifications = async ( req, res ) => {
-    res.json( { msg: "Notifications" } )
 }

@@ -48,7 +48,7 @@ exports.addFood = async ( req, res ) => {
         }
     }
 
-    if ( req.session.isLoggedIn && ( req.session.role === "main-admin" || "admin" ) ) {
+    if ( req.session.isLoggedIn && req.session.role === "admin" || req.session.role === "main-admin" ) {
         if ( !errors.isEmpty() ) {
             res.json( { errors: errors.array() } )
         } else {
@@ -82,7 +82,7 @@ exports.updateFood = async ( req, res ) => {
 
     let errors = validationResult( req )
 
-    if ( req.session.isLoggedIn && ( req.session.role === "main-admin" || "admin" ) ) {
+    if ( req.session.isLoggedIn && req.session.role === "admin" || req.session.role === "main-admin" ) {
         if ( !errors.isEmpty() ) {
             res.json( { errors: errors.array() } )
         } else {
@@ -161,7 +161,7 @@ exports.updateFoodImage = async ( req, res ) => {
         } )
     }
 
-    if ( req.session.isLoggedIn && ( req.session.role === "main-admin" || "admin" ) ) {
+    if ( req.session.isLoggedIn && req.session.role === "admin" || req.session.role === "main-admin" ) {
         db.query( foodCheck, ( err, output ) => {
             if ( err ) throw err
             if ( output && output.length > 0 ) {
@@ -192,7 +192,7 @@ exports.updateFoodImage = async ( req, res ) => {
 exports.deleteFood = async ( req, res ) => {
     let sql = `delete from foods where id = '${req.params.foodId}'`
     let foodIdCheck = `select * from foods where id = '${req.params.foodId}'`
-    if ( req.session.isLoggedIn && ( req.session.role === "main-admin" || "admin" ) ) {
+    if ( req.session.isLoggedIn && req.session.role === "admin" || req.session.role === "main-admin" ) {
         db.query( foodIdCheck, ( err, output ) => {
             if ( err ) throw err
             if ( output && output.length > 0 ) {

@@ -1,12 +1,16 @@
 const { validationResult } = require( 'express-validator' );
 const db = require( "../models/db" )
 
+// const { createNotifications } = require( "./user" )
+
 exports.placeOrder = async ( req, res ) => {
     const { location, special_description, delivery_time, number_of_plates, tel, orderedBy, address } = req.body
     const errors = validationResult( req )
     let createdAt = new Date()
 
-    let sql = `insert into orders values (id,?,?,?,?,?,?,?,?,?,?,?,0)`
+    let sql = `insert into orders values (id,?,?,?,?,?,?,?,?,?,?,?,0,?)`
+
+    let notify = `insert into notifications values (id,?,?,?,?,?,0,?,?,?)`
 
     let foodCheck = `select * from foods where id = '${req.params.foodId}'`
 
@@ -16,29 +20,55 @@ exports.placeOrder = async ( req, res ) => {
         if ( ( createdAt.getTime() + 1800000 ) > new Date( delivery_time ).getTime() ) {
             res.json( { msg: "Please enter a valid time" } )
         } else {
-            db.query( foodCheck, ( err, results ) => {
+            db.query( foodCheck, ( err, foods ) => {
                 if ( err ) throw err
-                if ( results && results.length > 0 ) {
+                if ( foods && foods.length > 0 ) {
                     if ( req.session.isLoggedIn && req.session.userId ) {
                         let userCheck = `select * from users where id = '${req.session.userId}'`
                         db.query( userCheck, ( err, output ) => {
                             if ( err ) throw err
                             if ( output && output.length > 0 ) {
-                                db.query( sql, [req.params.foodId, location, delivery_time, number_of_plates, special_description, createdAt, output[0].name, tel, address, req.session.userId, 0], ( err, results ) => {
+                                db.query( sql, [req.params.foodId, location, delivery_time, number_of_plates, special_description, createdAt, output[0].name, tel, address, req.session.userId, 0, foods[0].name], ( err, results ) => {
                                     if ( err ) throw err
-                                    res.status( 200 ).json( { results, msg: 'Order placed successfully' } )
+                                    let orderCheck = `select * from orders where id = '${results.insertId}'`
+                                    db.query( orderCheck, ( err, order ) => {
+                                        if ( err ) throw err
+                                        if ( order && order.length > 0 ) {
+                                            db.query( notify, [results.insertId, output[0].name, output[0].id, "New order", createdAt, foods[0].name, order[0].number_of_plates, order[0].delivery_time], ( err, result ) => {
+                                                if ( err ) throw err
+                                                res.status( 200 ).json( { results, result, foods, order, msg: 'Order placed successfully' } )
+                                            } )
+                                        } else if ( order && order.length === 0 ) {
+                                            res.json( { msg: "Your request couldn't be processed, please try again" } )
+                                        } else {
+                                            res.json( { err: "Internal server error, couldn't send a notification", msg: "Order placed successfully" } )
+                                        }
+                                    } )
                                 } )
                             } else {
-                                res.status( 500 ).json( { msg: "Internal server error" } )
+                                res.status( 500 ).json( { msg: "Internal server error", } )
                             }
                         } )
                     } else {
-                        db.query( sql, [req.params.foodId, location, delivery_time, number_of_plates, special_description, createdAt, orderedBy, tel, address, null, 0], ( err, results ) => {
+                        db.query( sql, [req.params.foodId, location, delivery_time, number_of_plates, special_description, createdAt, orderedBy, tel, address, null, 0, foods[0].name], ( err, results ) => {
                             if ( err ) throw err
-                            res.status( 200 ).json( { results, msg: 'Order placed successfully' } )
+                            let orderCheck = `select * from orders where id = '${results.insertId}'`
+                            db.query( orderCheck, ( err, order ) => {
+                                if ( err ) throw err
+                                if ( order && order.length > 0 ) {
+                                    db.query( notify, [results.insertId, orderedBy, null, "New order", createdAt, foods[0].name, order[0].number_of_plates, order[0].delivery_time], ( err, result ) => {
+                                        if ( err ) throw err
+                                        res.status( 200 ).json( { results, result, foods, order, msg: 'Order placed successfully' } )
+                                    } )
+                                } else if ( order && order.length === 0 ) {
+                                    res.json( { msg: "Your request couldn't be processed, please try again" } )
+                                } else {
+                                    res.json( { err: "Internal server error, couldn't send a notification", msg: "Order placed successfully" } )
+                                }
+                            } )
                         } )
                     }
-                } else if ( results && results.length === 0 ) {
+                } else if ( foods && foods.length === 0 ) {
                     res.status( 404 ).json( { msg: "Food not found, this order can't be placed" } )
                 } else {
                     res.status( 500 ).json( { msg: "Internal server error, please try again" } )
@@ -113,7 +143,7 @@ exports.deleteOrder = async ( req, res ) => {
 
 exports.getOrders = async ( req, res ) => {
     let sql = "select * from orders order by id desc"
-    if ( req.session.isLoggedIn && ( req.session.role === "admin" || "main-admin" ) ) {
+    if ( req.session.isLoggedIn && req.session.role === "admin" || req.session.role === "main-admin" ) {
         db.query( sql, ( err, output ) => {
             if ( err ) throw err
             if ( output && output.length > 0 ) {
@@ -129,7 +159,7 @@ exports.getOrders = async ( req, res ) => {
 
 exports.getOrder = async ( req, res ) => {
     let sql = `select * from orders where id = '${req.params.orderId}'`
-    if ( req.session.isLoggedIn && ( req.session.role === "admin" || "main-admin" ) ) {
+    if ( req.session.isLoggedIn && req.session.role === "admin" || req.session.role === "main-admin" ) {
         db.query( sql, ( err, output ) => {
             if ( err ) throw err
             if ( output && output.length > 0 ) {
@@ -166,7 +196,7 @@ exports.myOrders = async ( req, res ) => {
 exports.markOrderAsDelivered = async ( req, res ) => {
     let orderCheck = `select * from orders where id = '${req.params.orderId}'`
     let sql = `update orders set delivered = '1' where id = '${req.params.orderId}'`
-    if ( req.session.isLoggedIn && ( req.session.role === "admin" || "main-admin" ) ) {
+    if ( req.session.isLoggedIn && req.session.role === "admin" || req.session.role === "main-admin" ) {
         db.query( orderCheck, ( err, output ) => {
             if ( err ) throw err
             if ( output && output.length > 0 ) {
@@ -193,7 +223,7 @@ exports.markOrderAsDelivered = async ( req, res ) => {
 exports.getUserOrders = async ( req, res ) => {
     let sql = `select * from orders where userId = '${req.params.userId}'`
     let userCheck = `select * from users where id = '${req.params.userId}'`
-    if ( req.session.isLoggedIn && ( req.session.role === "main-admin" || "admin" ) ) {
+    if ( req.session.isLoggedIn && req.session.role === "admin" || req.session.role === "main-admin" ) {
         db.query( userCheck, ( err, output ) => {
             if ( err ) throw err
             if ( output && output.length > 0 ) {
@@ -215,7 +245,7 @@ exports.getUserOrders = async ( req, res ) => {
 exports.getFoodOrders = async ( req, res ) => {
     let sql = `select * from orders where foodId = '${req.params.foodId}'`
     let foodCheck = `select * from foods where id = '${req.params.foodId}'`
-    if ( req.session.isLoggedIn && ( req.session.role === "main-admin" || "admin" ) ) {
+    if ( req.session.isLoggedIn && req.session.role === "admin" || req.session.role === "main-admin" ) {
         db.query( foodCheck, ( err, output ) => {
             if ( err ) throw err
             if ( output && output.length > 0 ) {
@@ -232,4 +262,29 @@ exports.getFoodOrders = async ( req, res ) => {
     } else {
         res.status( 403 ).json( { msg: "Unauthorized" } )
     }
+}
+
+// notifications handlers
+// get all notifications
+exports.notifications = async ( req, res ) => {
+    let sql = `select * from notifications`
+    if ( req.session.isLoggedIn && req.session.role === "admin" || req.session.role === "main-admin" ) {
+        db.query( sql, ( err, results ) => {
+            if ( err ) throw err
+            if ( results && results.length > 0 ) {
+                res.status( 200 ).json( { msg: "Notifications retrieved", results } )
+            } else if ( results && results.length === 0 ) {
+                res.status( 404 ).json( { msg: "No notification found" } )
+            } else {
+                res.status( 500 ).json( { msg: "Internal server error" } )
+            }
+        } )
+    } else {
+        res.status( 403 ).json( { msg: "Unauthorized" } )
+    }
+}
+
+// create notifications
+exports.createNotification = async ( req, res ) => {
+    console.log( "Hey admin, an order was placed, chec it out" )
 }

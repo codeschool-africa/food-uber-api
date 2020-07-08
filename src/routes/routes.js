@@ -5,9 +5,9 @@ const multer = require( "multer" )
 const router = express.Router()
 
 //controllers
-const { register, login, addProfile, getUsers, getAdmins, addAdmin, removeAdmin, logout, uploadDp, passwordRecovery, settings, notifications } = require( "../controllers/user" )
+const { register, login, addProfile, getUsers, getAdmins, addAdmin, removeAdmin, logout, uploadDp, passwordRecovery, settings } = require( "../controllers/user" )
 const { addFood, getFoods, getFeaturedFoods, updateFood, updateFoodImage, deleteFood, getFood, search } = require( "../controllers/product" )
-const { placeOrder, getOrder, getOrders, markOrderAsDelivered, editOrder, deleteOrder, myOrders, getUserOrders, getFoodOrders } = require( "../controllers/orders" );
+const { placeOrder, getOrder, getOrders, markOrderAsDelivered, editOrder, deleteOrder, myOrders, getUserOrders, getFoodOrders, notifications, createNotification } = require( "../controllers/orders" );
 const { addToCart, myCart, removeFromCart } = require( "../controllers/cart" );
 
 //users
@@ -144,7 +144,10 @@ router.post( "/remove-from-cart/:cartId", removeFromCart )
 // retrieve my carts
 router.get( "/my-cart", myCart )
 
-// notifications
+// create notifications
+router.get( "/create-notifications", createNotification )
+
+// get notifications // admin only
 router.get( "/notifications", notifications )
 
 module.exports = router
