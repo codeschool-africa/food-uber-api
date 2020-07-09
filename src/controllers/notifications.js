@@ -24,7 +24,7 @@ exports.createNotification = async ( req, res ) => {
     let date = new Date()
     let sql = `insert into notifications values (id,?,?,?,?,?,0,?,?,?)`
     let orders = `select * from orders`
-    let pendingOrders = `select * from orders`
+    let pendingOrders = `select * from orders where delivery_time < NOW()`
     db.query( orders, ( err, output ) => {
         if ( err ) throw err
         if ( output && output.length > 0 ) {

@@ -101,10 +101,3 @@ app.listen( PORT, ( err ) => {
     console.log( `Server running on port ${PORT}` )
   }
 } )
-
-// todo
-// thinking of changing timestamps data in tables in order to check the time before and after delivery_time to 
-// add an order in the pending list and to notify admin of the pending orders
-//  or when delivery time is approaching
-
-// notifications are the final routes
