@@ -25,12 +25,17 @@ exports.createNotification = async ( req, res ) => {
     let sql = `insert into notifications values (id,?,?,?,?,?,0,?,?,?)`
     let orders = `select * from orders`
     let pendingOrders = `select * from orders where delivery_time < NOW()`
+
+    let notifications = []
+
+    // search on how to add multiple rows in a table, mysql
     db.query( orders, ( err, output ) => {
         if ( err ) throw err
         if ( output && output.length > 0 ) {
             db.query( pendingOrders, ( err, outputs ) => {
                 console.log( outputs )
                 res.json( { outputs } )
+                // I need to push all the ouptups in the notification array
             } )
         } else if ( output && output.length === 0 ) {
             res.status( 404 ).json( { msg: "No order found" } )
