@@ -1,8 +1,8 @@
 const dbConfig = {
-    server: "remotemysql.com",
-    user: "MH2slvQgFI",
-    password: "Tzt82tz5iZ",
-    database: "MH2slvQgFI"
+    host: "localhost",
+    user: "root",
+    password: "thomst5v5nson",
+    database: "foodUber"
 }
 
 module.exports = dbConfig
