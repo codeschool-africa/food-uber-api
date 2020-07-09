@@ -1,4 +1,4 @@
-const { validationResult } = require( 'express-validator' );
+const { validationResult, check } = require( 'express-validator' );
 const db = require( "../models/db" )
 
 // const { createNotifications } = require( "./user" )
@@ -262,6 +262,11 @@ exports.getFoodOrders = async ( req, res ) => {
     } else {
         res.status( 403 ).json( { msg: "Unauthorized" } )
     }
+}
+
+// mark order as pending
+exports.markOrderAsPending = async ( req, res ) => {
+    res.json( { msg: "Order mared as pending" } )
 }
 
 // notifications handlers
