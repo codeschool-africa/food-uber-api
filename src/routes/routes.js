@@ -7,7 +7,7 @@ const router = express.Router()
 //controllers
 const { register, login, addProfile, getUsers, getAdmins, addAdmin, removeAdmin, logout, uploadDp, passwordRecovery, settings } = require( "../controllers/user" )
 const { addFood, getFoods, getFeaturedFoods, updateFood, updateFoodImage, deleteFood, getFood, search } = require( "../controllers/product" )
-const { placeOrder, getOrder, getOrders, markOrderAsDelivered, editOrder, deleteOrder, myOrders, getUserOrders, getFoodOrders, notifications, createNotification } = require( "../controllers/orders" );
+const { placeOrder, getOrder, getOrders, markOrderAsDelivered, editOrder, deleteOrder, myOrders, getUserOrders, getFoodOrders, notifications, createNotification, readNotification } = require( "../controllers/orders" );
 const { addToCart, myCart, removeFromCart } = require( "../controllers/cart" );
 
 //users
@@ -145,9 +145,12 @@ router.post( "/remove-from-cart/:cartId", removeFromCart )
 router.get( "/my-cart", myCart )
 
 // create notifications
-router.get( "/create-notifications", createNotification )
+router.get( "/create-notification", createNotification )
 
 // get notifications // admin only
 router.get( "/notifications", notifications )
+
+// read notification
+router.post( "/notification/:notificationId", readNotification )
 
 module.exports = router

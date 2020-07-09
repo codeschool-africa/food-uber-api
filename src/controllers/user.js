@@ -104,7 +104,7 @@ exports.passwordRecovery = async ( req, res ) => {
     let { email } = req.body
     let password = `${Math.floor( Math.random() * 10000000 + 1 )}`
     let hashedpassword = await bcrypt.hash( password, salt );
-    let sql = `update users set password = '${hashedpassword}'`
+    let sql = `update users set password = '${hashedpassword}' where email = '${email}'`
     let emailCheck = `SELECT * from users where email = '${email}'`
 
     if ( !errors.isEmpty() ) {
