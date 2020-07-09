@@ -1,7 +1,7 @@
 const dbConfig = {
     host: "remotemysql.com",
     user: "MH2slvQgFI",
-    password: "thomst5v5nson",
+    password: "Tzt82tz5iZ",
     database: "MH2slvQgFI"
 }
 
