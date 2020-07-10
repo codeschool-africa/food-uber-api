@@ -266,6 +266,37 @@ exports.getFoodOrders = async ( req, res ) => {
 
 // mark order as pending
 exports.markOrderAsPending = async ( req, res ) => {
-    res.json( { msg: "Order mared as pending" } )
+    let sql = `update orders set pending = 1 where delivery_time < NOW() and delivered = 0`
+    if ( req.session.isLoggedIn && req.session.role === "main-admin" || req.session.role === "admin" ) {
+        db.query( sql, ( err, results ) => {
+            if ( err ) throw err
+            if ( results ) {
+                res.json( { results } )
+            } else {
+                res.status( 500 ).json( { msg: "Internal server error" } )
+            }
+        } )
+    } else {
+        res.status( 404 ).json( { msg: "Unauthorized" } )
+    }
+}
+
+// get pending orders
+exports.getPendingOrders = async ( req, res ) => {
+    let sql = `select * from orders where pending = 1 and delivered = 0`
+    if ( req.session.isLoggedIn && req.session.role === "main-admin" || req.session.role === "admin" ) {
+        db.query( sql, ( err, results ) => {
+            if ( err ) throw err
+            if ( results && results.length > 0 ) {
+                res.status( 200 ).json( { msg: "Pending orders retrieved", results } )
+            } else if ( results && results.length === 0 ) {
+                res.status( 404 ).json( { msg: 'No pending order found' } )
+            } else {
+                res.status( 500 ).json( { msg: "Internal server error" } )
+            }
+        } )
+    } else {
+        res.status( 403 ).json( { msg: "Unauthorized" } )
+    }
 }
 

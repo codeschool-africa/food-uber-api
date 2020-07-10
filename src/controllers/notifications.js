@@ -20,30 +20,38 @@ exports.notifications = async ( req, res ) => {
 }
 
 // create notifications
-exports.createNotification = async ( req, res ) => {
-    let date = new Date()
-    let sql = `insert into notifications values (id,?,?,?,?,?,0,?,?,?)`
-    let orders = `select * from orders`
-    let pendingOrders = `select * from orders where delivery_time < NOW()`
+// exports.createNotification = async ( req, res ) => {
+//     let createdAt = new Date()
+//     let orders = `select * from orders`
+//     let pendingOrders = `select * from orders where delivery_time < NOW()`
 
-    let notifications = []
+//     // let notifications = []
 
-    // search on how to add multiple rows in a table, mysql
-    db.query( orders, ( err, output ) => {
-        if ( err ) throw err
-        if ( output && output.length > 0 ) {
-            db.query( pendingOrders, ( err, outputs ) => {
-                console.log( outputs )
-                res.json( { outputs } )
-                // I need to push all the ouptups in the notification array
-            } )
-        } else if ( output && output.length === 0 ) {
-            res.status( 404 ).json( { msg: "No order found" } )
-        } else {
-            res.status( 500 ).json( { msg: "Internal server error" } )
-        }
-    } )
-}
+//     // search on how to add multiple rows in a table, mysql
+//     db.query( orders, ( err, output ) => {
+//         if ( err ) throw err
+//         if ( output && output.length > 0 ) {
+//             db.query( pendingOrders, ( err, outputs ) => {
+//                 // console.log( outputs )
+//                 outputs.map( output => {
+//                     let sql = `insert into notifications values (id,'${output.id}','${output.orderedBy}','${output.userId}',"Pending Order",'${createdAt}',0,'${output.food_name}','${output.number_of_plates}','${output.delivery_time}')`
+//                     // [outputs.map( output => ["id", output.id, output.orderedBy, output.userId, "Pending Order", createdAt, 0, output.food_name, output.number_of_plates, output.delivery_time] )],
+//                     db.query(
+//                         sql,
+//                         ( err, results ) => {
+//                             if ( err ) throw err
+//                             res.json( { results } )
+//                         }
+//                     );
+//                 } )
+//             } )
+//         } else if ( output && output.length === 0 ) {
+//             res.status( 404 ).json( { msg: "No order found" } )
+//         } else {
+//             res.status( 500 ).json( { msg: "Internal server error" } )
+//         }
+//     } )
+// }
 
 // read notification
 exports.readNotification = async ( req, res ) => {

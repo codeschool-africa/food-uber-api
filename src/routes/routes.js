@@ -7,7 +7,7 @@ const router = express.Router()
 //controllers
 const { register, login, addProfile, getUsers, getAdmins, addAdmin, removeAdmin, logout, uploadDp, passwordRecovery, settings } = require( "../controllers/users" )
 const { addFood, getFoods, getFeaturedFoods, updateFood, updateFoodImage, deleteFood, getFood, search } = require( "../controllers/foods" )
-const { placeOrder, getOrder, getOrders, markOrderAsDelivered, editOrder, deleteOrder, myOrders, getUserOrders, getFoodOrders, markOrderAsPending } = require( "../controllers/orders" );
+const { placeOrder, getOrder, getOrders, markOrderAsDelivered, editOrder, deleteOrder, myOrders, getUserOrders, getFoodOrders, markOrderAsPending, getPendingOrders } = require( "../controllers/orders" );
 const { addToCart, myCart, removeFromCart } = require( "../controllers/cart" );
 const { notifications, createNotification, readNotification, } = require( "../controllers/notifications" )
 
@@ -127,7 +127,10 @@ router.get( "/order/:orderId", getOrder )
 router.post( "/mark-delivered-order/:orderId", markOrderAsDelivered )
 
 // mark order as pending
-router.post( "/mark-pending-order", markOrderAsPending )
+router.post( "/mark-pending-orders", markOrderAsPending )
+
+// get pending orders
+router.get( "/pending-orders", getPendingOrders )
 
 // get user orders
 router.get( "/my-orders", myOrders )
@@ -149,7 +152,7 @@ router.post( "/remove-from-cart/:cartId", removeFromCart )
 router.get( "/my-cart", myCart )
 
 // create notifications
-router.get( "/create-notification", createNotification )
+// router.get( "/create-notification", createNotification )
 
 // get notifications // admin only
 router.get( "/notifications", notifications )
