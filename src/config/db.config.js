@@ -2,13 +2,9 @@ const dbConfig = {
     host: "db4free.net",
     user: "fooduber",
     // port: 3306,
-    password: "bmst5v5n",
+    password: "68a367e4",
     database: "farajafooduber"
 }
 
 module.exports = dbConfig
 
-// host: "localhost",	    
-//     user: "root",	    
-//     password: "thomst5v5nson",	    
-//     database: "foodUber"
