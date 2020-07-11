@@ -52,7 +52,7 @@ app.get( "/createdb", ( req, res ) => {
 
 // create various tables
 app.get( "/createUsersTable", ( req, res ) => {
-  let sql = "Create table users(id varchar(36) Primary key, name varchar(255), email varchar(255), tel varchar(255), password varchar(255), role varchar(255), createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP, confirmed tinyint(1) default false )"
+  let sql = "Create table users(id varchar(36) Primary key, name varchar(255), email varchar(255), tel varchar(255), password varchar(255), role varchar(255), createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP, confirmed tinyint(1) default false, location varchar(255), address varchar(255), dp_path varchar(255) )"
 
   db.query( sql, ( err, result ) => {
     if ( err ) throw err
