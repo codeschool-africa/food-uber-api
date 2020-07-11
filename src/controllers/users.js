@@ -327,7 +327,7 @@ exports.uploadDp = async ( req, res ) => {
 
 // get users on admins profile
 exports.getUsers = async ( req, res ) => {
-    let sql = "select * from users order by createdAt desc"
+    let sql = "select name, email, tel, role, location, dp_path, address from users order by createdAt desc"
     let session = req.session
     if ( session.isLoggedIn && session.role === "admin" || session.role === "main-admin" ) {
         db.query( sql, ( err, results ) => {
@@ -347,7 +347,7 @@ exports.getUsers = async ( req, res ) => {
 
 // get all admins in main-admins profile
 exports.getAdmins = async ( req, res ) => {
-    let sql = `select * from users where role = 'admin' order by createdAt desc`
+    let sql = `select name, email, tel, role, location, dp_path, address from users where role = 'admin' order by createdAt desc`
     let session = req.session
     if ( session.isLoggedIn && session.role === "main-admin" ) {
         db.query( sql, ( err, results ) => {
