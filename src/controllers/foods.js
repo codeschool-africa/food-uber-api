@@ -1,7 +1,8 @@
 const { validationResult } = require( 'express-validator' );
 const multer = require( "multer" )
 const fs = require( "fs" )
-const db = require( "../models/db" )
+const db = require( "../models/db" );
+const { json } = require( 'body-parser' );
 
 // add food by admin
 exports.addFood = async ( req, res ) => {
@@ -212,6 +213,65 @@ exports.deleteFood = async ( req, res ) => {
         } )
     } else {
         res.status( 403 ).json( { msg: 'Unauthorized' } )
+    }
+}
+
+exports.setFeaturedFood = async ( req, res ) => {
+    let foodCheck = `select * from foods where id = '${req.params.foodId}'`
+    let sql = `update foods set featured = '1' where id = '${req.params.foodId}'`
+    if ( req.session.isLoggedIn && req.session.role === "admin" || req.session.role === "main-admin" ) {
+        db.query( foodCheck, ( err, output ) => {
+            if ( err ) throw err
+            if ( output && output.length > 0 ) {
+                if ( output[0].featured === 1 ) {
+                    res.status( 400 ).json( { msg: "Food already registered to featured list" } )
+                } else {
+                    db.query( sql, ( err, results ) => {
+                        if ( results ) {
+                            res, json( { results, msg: "Food added in featured list" } )
+                        } else {
+                            res.status( 500 ).json( { msg: "Internal server error" } )
+                        }
+                    } )
+                }
+            } else if ( output && output.length === 0 ) {
+                res.status( 404 ).json( { msg: "Food not found" } )
+            } else {
+                res.status( 500 ).json( { msg: "Internal server error" } )
+            }
+        } )
+    } else {
+        res.status( 403 ).json( { msg: "Unauthorized" } )
+    }
+}
+
+exports.removeFeaturedFood = async ( req, res ) => {
+    let foodCheck = `select * from foods where id = '${req.params.foodId}'`
+    let sql = `update foods set featured = '0' where id = '${req.params.foodId}'`
+    if ( req.session.isLoggedIn && req.session.role === "admin" || req.session.role === "main-admin" ) {
+        db.query( foodCheck, ( err, output ) => {
+            if ( err ) throw err
+            if ( output && output.length > 0 ) {
+                if ( output[0].featured === 0 ) {
+                    res.status( 400 ).json( { msg: "Food already removed from featured list" } )
+                } else {
+                    db.query( sql, ( err, results ) => {
+                        if ( err ) throw err
+                        if ( results ) {
+                            res, json( { results, msg: "Food removed in featured list" } )
+                        } else {
+                            res.status( 500 ).json( { msg: "Internal server error" } )
+                        }
+                    } )
+                }
+            } else if ( output && output.length === 0 ) {
+                res.status( 404 ).json( { msg: "Food not found" } )
+            } else {
+                res.status( 500 ).json( { msg: "Internal server error" } )
+            }
+        } )
+    } else {
+        res.status( 403 ).json( { msg: "Unauthorized" } )
     }
 }
 

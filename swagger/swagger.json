@@ -18,6 +18,21 @@
     "tags": [
         {
           "name": "Users"
+        },
+        {
+            "name": "Admin"
+        },
+        {
+            "name": "Foods"
+        },
+        {
+            "name": "Orders"
+        },
+        {
+            "name": "Cart"
+        },
+        {
+            "name": "Notifications"
         }
       ],
     "paths": {
@@ -46,6 +61,448 @@
                     }
                 }
             }
+        },
+        "api/login": {
+            "post": {
+                "tags": ["Users"],
+                "description": "Login user",
+                "operationalId": "loginUser",
+                "parameters": [
+                    {"content": {
+                        "appllication/json": {
+                            "schema": {
+                               
+                            }
+                        }
+                    }
+                }
+                ],
+                "requestBody": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                         
+                        }
+                      }
+                    }
+                }
+            }
+        },
+        "api/recover-password": {
+            "post": {
+                "tags": ["Users"],
+                "description": "Recover password",
+                "operationalId": "passwordRecovery",
+                "parameters": [
+                    {"content": {
+                        "appllication/json": {
+                            "schema": {
+                               
+                            }
+                        }
+                    }
+                }
+                ],
+                "requestBody": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                         
+                        }
+                      }
+                    }
+                }
+            }
+        },
+        "api/setting": {
+            "post": {
+                "tags": ["Users"],
+                "description": "Setting",
+                "operationalId": "setting",
+                "parameters": [
+                    {"content": {
+                        "appllication/json": {
+                            "schema": {
+                               
+                            }
+                        }
+                    }
+                }
+                ],
+                "requestBody": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                         
+                        }
+                      }
+                    }
+                }
+            }
+        },
+        "api/profile": {
+            "post": {
+                "tags": ["Users"],
+                "description": "Profile",
+                "operationalId": "profile",
+                "parameters": [
+                    {"content": {
+                        "appllication/json": {
+                            "schema": {
+                               
+                            }
+                        }
+                    }
+                }
+                ],
+                "requestBody": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                         
+                        }
+                      }
+                    }
+                }
+            }
+        },
+        "api/upload-dp": {
+            "post": {
+                "tags": ["Users"],
+                "description": "Upload profile image",
+                "operationalId": "uploadDp",
+                "parameters": [
+                    {"content": {
+                        "appllication/json": {
+                            "schema": {
+                               
+                            }
+                        }
+                    }
+                }
+                ],
+                "requestBody": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                         
+                        }
+                      }
+                    }
+                }
+            }
+        },
+        "api/logout": {
+            "post": {
+                "tags": ["Users"],
+                "description": "Logout user by destroying all sessions",
+                "operationalId": "logout user",
+                "parameters": [
+                    {"content": {
+                        "appllication/json": {
+                            "schema": {
+                               
+                            }
+                        }
+                    }
+                }
+                ],
+                "requestBody": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                         
+                        }
+                      }
+                    }
+                }
+            }
+        },
+        "api/users": {
+            "get": {
+                "tags": ["Admin"],
+                "description": "Renders all users",
+                "operationalId": "get users",
+                "parameters": [
+                    {"content": {
+                        "appllication/json": {
+                            "schema": {
+                               
+                            }
+                        }
+                    }
+                }
+                ],
+                "requestBody": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                         
+                        }
+                      }
+                    }
+                }
+            }
+        },
+        "api/admins": {
+            "get": {
+                "tags": ["Admin"],
+                "description": "Get all admins if user is main-admin",
+                "operationalId": "getAdmins",
+                "parameters": [
+                    {"content": {
+                        "appllication/json": {
+                            "schema": {
+                               
+                            }
+                        }
+                    }
+                }
+                ],
+                "requestBody": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                         
+                        }
+                      }
+                    }
+                }
+            }
+        },
+        "api/add-admin/:userId": {
+            "post": {
+                "tags": ["Admin"],
+                "description": "Main admin adds admin role to a user",
+                "operationalId": "addAdmin",
+                "parameters": [
+                    {"content": {
+                        "appllication/json": {
+                            "schema": {
+                               
+                            }
+                        }
+                    }
+                }
+                ],
+                "requestBody": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                         
+                        }
+                      }
+                    }
+                }
+            }
+        },
+        "api/remove-admin/:userId": {
+            "post": {
+                "tags": ["Admin"],
+                "description": "Main admin removes admin role from a user",
+                "operationalId": "loginUser",
+                "parameters": [
+                    {"content": {
+                        "appllication/json": {
+                            "schema": {
+                               
+                            }
+                        }
+                    }
+                }
+                ],
+                "requestBody": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                         
+                        }
+                      }
+                    }
+                }
+            }
+        },
+        "api/add-food": {
+            "post": {
+                "tags": ["Foods"],
+                "description": "Admin creates food",
+                "operationalId": "addFood",
+                "parameters": [
+                    {"content": {
+                        "appllication/json": {
+                            "schema": {
+                               
+                            }
+                        }
+                    }
+                }
+                ],
+                "requestBody": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                         
+                        }
+                      }
+                    }
+                }
+            }
+        },
+        "api/update-food/:foodId": {
+            "post": {
+                "tags": ["Foods"],
+                "description": "Admin updates food",
+                "operationalId": "updateFood",
+                "parameters": [
+                    {"content": {
+                        "appllication/json": {
+                            "schema": {
+                               
+                            }
+                        }
+                    }
+                }
+                ],
+                "requestBody": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                         
+                        }
+                      }
+                    }
+                }
+            }
+        },
+        "api/delete-food/:foodId": {
+            "post": {
+                "tags": ["Foods"],
+                "description": "Admin deletes food",
+                "operationalId": "deleteFood",
+                "parameters": [
+                    {"content": {
+                        "appllication/json": {
+                            "schema": {
+                               
+                            }
+                        }
+                    }
+                }
+                ],
+                "requestBody": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                         
+                        }
+                      }
+                    }
+                }
+            }
+        },
+        "api/get-foods": {
+            "get": {
+                "tags": ["Foods"],
+                "description": "Retrieves all foods available",
+                "operationalId": "getFoods",
+                "parameters": [
+                    {"content": {
+                        "appllication/json": {
+                            "schema": {
+                               
+                            }
+                        }
+                    }
+                }
+                ],
+                "requestBody": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                         
+                        }
+                      }
+                    }
+                }
+            }
+        },
+        "api/get-food/:foodId": {
+            "get": {
+                "tags": ["Foods"],
+                "description": "Retrieves specific food informations",
+                "operationalId": "getFood",
+                "parameters": [
+                    {"content": {
+                        "appllication/json": {
+                            "schema": {
+                               
+                            }
+                        }
+                    }
+                }
+                ],
+                "requestBody": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                         
+                        }
+                      }
+                    }
+                }
+            }
+        },
+        "api/get-featured-foods": {
+            "post": {
+                "tags": ["Foods"],
+                "description": "Retrieve all features foods",
+                "operationalId": "getfeaturedfoods",
+                "parameters": [
+                    {"content": {
+                        "appllication/json": {
+                            "schema": {
+                               
+                            }
+                        }
+                    }
+                }
+                ],
+                "requestBody": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                         
+                        }
+                      }
+                    }
+                }
+            }
+        },
+        "api/add-featured-foods/:foodId": {
+            "post": {
+                "tags": ["Foods"],
+                "description": "Admin adds a food in featured list",
+                "operationalId": "addfeaturedfood",
+                "parameters": [
+                    {"content": {
+                        "appllication/json": {
+                            "schema": {
+                               
+                            }
+                        }
+                    }
+                }
+                ],
+                "requestBody": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                         
+                        }
+                      }
+                    }
+                }
+            }
         }
     }
-  }
+}

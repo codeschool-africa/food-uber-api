@@ -6,7 +6,7 @@ const router = express.Router()
 
 //controllers
 const { register, login, addProfile, getUsers, getAdmins, addAdmin, removeAdmin, logout, uploadDp, passwordRecovery, settings } = require( "../controllers/users" )
-const { addFood, getFoods, getFeaturedFoods, updateFood, updateFoodImage, deleteFood, getFood, search } = require( "../controllers/foods" )
+const { addFood, getFoods, getFeaturedFoods, updateFood, updateFoodImage, deleteFood, getFood, search, setFeaturedFood, removeFeaturedFood } = require( "../controllers/foods" )
 const { placeOrder, getOrder, getOrders, markOrderAsDelivered, editOrder, deleteOrder, myOrders, getUserOrders, getFoodOrders, markOrderAsPending, getPendingOrders } = require( "../controllers/orders" );
 const { addToCart, myCart, removeFromCart } = require( "../controllers/cart" );
 const { notifications, createNotification, readNotification, } = require( "../controllers/notifications" )
@@ -82,6 +82,12 @@ router.post( "/update-food-image/:foodId", updateFoodImage )
 
 //admin deletes food
 router.post( "/delete-food/:foodId", deleteFood )
+
+// add featured food
+router.post( "/add-featured-food/:foodId", setFeaturedFood )
+
+// remove featured food
+router.post( "remove-featured-food/:foodId", removeFeaturedFood )
 
 //retrieves all foods
 router.get( "/get-foods", getFoods )
