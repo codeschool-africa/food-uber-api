@@ -21,7 +21,7 @@
         }
       ],
     "paths": {
-        "/register": {
+        "api/register": {
             "post": {
                 "tags": ["Users"],
                 "description": "Create User",
