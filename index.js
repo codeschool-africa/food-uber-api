@@ -61,7 +61,7 @@ app.get( "/createUsersTable", ( req, res ) => {
 } )
 
 app.get( "/createFoodsTable", ( req, res ) => {
-  let sql = "Create table foods(id int auto_increment Primary key not null, name varchar(255) not null, description varchar(255), category varchar(255), cost int(11) not null, featured tinyint(1) not null, createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP, createdBy varchar(255) )"
+  let sql = "Create table foods(id int auto_increment Primary key not null, name varchar(255) not null, description varchar(255), category varchar(255), cost int(11) not null, featured tinyint(1) not null, createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP, createdBy varchar(255), food_image varchar(255) )"
 
   db.query( sql, ( err, result ) => {
     if ( err ) throw err
@@ -79,7 +79,7 @@ app.get( "/createOrdersTable", ( req, res ) => {
 } )
 
 app.get( "/createCartTable", ( req, res ) => {
-  let sql = "Create table carts(id int auto_increment Primary key not null, foodId int not null, food_name varchar(255) not null, userId varchar(255), createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP )"
+  let sql = "Create table carts(id int auto_increment Primary key not null, foodId int not null, food_name varchar(255) not null, userId varchar(255), createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP, cart_image )"
 
   db.query( sql, ( err, result ) => {
     if ( err ) throw err
