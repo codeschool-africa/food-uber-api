@@ -70,7 +70,7 @@ app.get( "/createFoodsTable", ( req, res ) => {
 } )
 
 app.get( "/createOrdersTable", ( req, res ) => {
-  let sql = "Create table orders(id int auto_increment Primary key not null, foodId int not null, location varchar(255) not null, delivery_time timestamp not null, number_of_plates int(11) not null, special_description varchar(255), createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP, orderedBy varchar(255), tel varchar(255) not null, address varchar(255), userId varchar(255), delivered tinytin(1) not null, pending tinytin(1) not null, food_name varchar(255) not null )"
+  let sql = "Create table orders(id int auto_increment Primary key not null, foodId int not null, location varchar(255) not null, delivery_time timestamp not null, number_of_plates int(11) not null, special_description varchar(255), createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP, orderedBy varchar(255), tel varchar(255) not null, address varchar(255), userId varchar(255), delivered tinyint(1) not null, pending tinyint(1) not null, food_name varchar(255) not null )"
 
   db.query( sql, ( err, result ) => {
     if ( err ) throw err
@@ -88,7 +88,7 @@ app.get( "/createCartTable", ( req, res ) => {
 } )
 
 app.get( "/createNotificationsTable", ( req, res ) => {
-  let sql = "Create table notifications(id int auto_increment Primary key not null, orderId int not null, orderedBy varchar(255) not null, userId varchar(255), status varchar(255) not null, createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP, read tinytin(1) default 0 not null, food_name varchar(255) not null, number_of_plates int not null, delivery_time not null )"
+  let sql = "Create table notifications(id int auto_increment Primary key not null, orderId int not null, orderedBy varchar(255) not null, userId varchar(255), status varchar(255) not null, createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP, read_status tinyint(1) default 0 not null, food_name varchar(255) not null, number_of_plates int not null, delivery_time timestamp not null )"
 
   db.query( sql, ( err, result ) => {
     if ( err ) throw err
