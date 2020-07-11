@@ -3,12 +3,16 @@ const path = require( "path" )
 const bodyParser = require( "body-parser" );
 const cors = require( "cors" )
 const cookieSession = require( 'cookie-session' );
+const swaggerUi = require( 'swagger-ui-express' );
 const db = require( "./src/models/db" )
 const router = require( "./src/routes/routes" );
+const swaggerDocument = require( "./swagger/swagger.json" )
 
 const app = express()
 
 app.use( express.static( path.join( __dirname, 'public' ) ) );
+
+app.use( '/api-docs', swaggerUi.serve, swaggerUi.setup( swaggerDocument ) );
 
 //setting  cookie session
 app.use( cookieSession( {

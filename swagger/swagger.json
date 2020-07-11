@@ -1,0 +1,51 @@
+{
+    "openapi": "3.0.1",
+    "info": {
+      "version": "1.0.0",
+      "title": "Food uber",
+      "description": "Created by <a href='http://github.com/bmsteven'>Benedict Steven</a>"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:5000",
+            "description": "Local server"
+        },
+        {
+            "url": "http://food-uber-api.herokuapp.com",
+            "description": "Testing server"
+        }
+    ],
+    "tags": [
+        {
+          "name": "Users"
+        }
+      ],
+    "paths": {
+        "/register": {
+            "post": {
+                "tags": ["Users"],
+                "description": "Create User",
+                "operationalId": "createUser",
+                "parameters": [
+                    {"content": {
+                        "appllication/json": {
+                            "schema": {
+                                "#ref": "#/components/schemas/users"
+                            }
+                        }
+                    }
+                }
+                ],
+                "requestBody": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/Users"
+                        }
+                      }
+                    }
+                }
+            }
+        }
+    }
+  }
