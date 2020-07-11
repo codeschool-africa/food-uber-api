@@ -300,3 +300,5 @@ exports.getPendingOrders = async ( req, res ) => {
     }
 }
 
+// todo
+// set delete and update orders if time is 1hr or less than the delivery time

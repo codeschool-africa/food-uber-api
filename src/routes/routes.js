@@ -157,9 +157,7 @@ router.post( "/remove-from-cart/:cartId", removeFromCart )
 // retrieve my carts
 router.get( "/my-cart", myCart )
 
-// create notifications
-// router.get( "/create-notification", createNotification )
-
+// notifications
 // get notifications // admin only
 router.get( "/notifications", notifications )
 

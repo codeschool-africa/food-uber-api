@@ -374,6 +374,32 @@
                 }
             }
         },
+        "api/update-food-image/:foodId": {
+            "post": {
+                "tags": ["Foods"],
+                "description": "Admin updates food image",
+                "operationalId": "updateFoodImage",
+                "parameters": [
+                    {"content": {
+                        "appllication/json": {
+                            "schema": {
+                               
+                            }
+                        }
+                    }
+                }
+                ],
+                "requestBody": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                         
+                        }
+                      }
+                    }
+                }
+            }
+        },
         "api/delete-food/:foodId": {
             "post": {
                 "tags": ["Foods"],
@@ -453,7 +479,7 @@
             }
         },
         "api/get-featured-foods": {
-            "post": {
+            "get": {
                 "tags": ["Foods"],
                 "description": "Retrieve all features foods",
                 "operationalId": "getfeaturedfoods",
@@ -478,11 +504,479 @@
                 }
             }
         },
-        "api/add-featured-foods/:foodId": {
+        "api/add-featured-food/:foodId": {
             "post": {
                 "tags": ["Foods"],
                 "description": "Admin adds a food in featured list",
                 "operationalId": "addfeaturedfood",
+                "parameters": [
+                    {"content": {
+                        "appllication/json": {
+                            "schema": {
+                               
+                            }
+                        }
+                    }
+                }
+                ],
+                "requestBody": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                         
+                        }
+                      }
+                    }
+                }
+            }
+        },
+        "api/remove-featured-food/:foodId": {
+            "post": {
+                "tags": ["Foods"],
+                "description": "Admin removes a food from featured list",
+                "operationalId": "removefeaturedfood",
+                "parameters": [
+                    {"content": {
+                        "appllication/json": {
+                            "schema": {
+                               
+                            }
+                        }
+                    }
+                }
+                ],
+                "requestBody": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                         
+                        }
+                      }
+                    }
+                }
+            }
+        },
+        "api/search": {
+            "post": {
+                "tags": ["Foods"],
+                "description": "Search anything from foods",
+                "operationalId": "search",
+                "parameters": [
+                    {"content": {
+                        "appllication/json": {
+                            "schema": {
+                               
+                            }
+                        }
+                    }
+                }
+                ],
+                "requestBody": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                         
+                        }
+                      }
+                    }
+                }
+            }
+        },
+        "api/order/:foodId": {
+            "post": {
+                "tags": ["Orders"],
+                "description": "User creates orders",
+                "operationalId": "createorder",
+                "parameters": [
+                    {"content": {
+                        "appllication/json": {
+                            "schema": {
+                               
+                            }
+                        }
+                    }
+                }
+                ],
+                "requestBody": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                         
+                        }
+                      }
+                    }
+                }
+            }
+        },
+        "api/edit-order/:orderId": {
+            "post": {
+                "tags": ["Orders"],
+                "description": "Authenticated user edits order",
+                "operationalId": "editOrder",
+                "parameters": [
+                    {"content": {
+                        "appllication/json": {
+                            "schema": {
+                               
+                            }
+                        }
+                    }
+                }
+                ],
+                "requestBody": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                         
+                        }
+                      }
+                    }
+                }
+            }
+        },
+        "api/delete-order/:orderId": {
+            "post": {
+                "tags": ["Orders"],
+                "description": "Authenticated user deletes order",
+                "operationalId": "deleteOrder",
+                "parameters": [
+                    {"content": {
+                        "appllication/json": {
+                            "schema": {
+                               
+                            }
+                        }
+                    }
+                }
+                ],
+                "requestBody": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                         
+                        }
+                      }
+                    }
+                }
+            }
+        },
+        "api/orders": {
+            "get": {
+                "tags": ["Orders"],
+                "description": "Admin retrieve all orders",
+                "operationalId": "Orders",
+                "parameters": [
+                    {"content": {
+                        "appllication/json": {
+                            "schema": {
+                               
+                            }
+                        }
+                    }
+                }
+                ],
+                "requestBody": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                         
+                        }
+                      }
+                    }
+                }
+            }
+        },
+        "api/order/:orderId": {
+            "get": {
+                "tags": ["Orders"],
+                "description": "admin gets order info",
+                "operationalId": "getOrder",
+                "parameters": [
+                    {"content": {
+                        "appllication/json": {
+                            "schema": {
+                               
+                            }
+                        }
+                    }
+                }
+                ],
+                "requestBody": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                         
+                        }
+                      }
+                    }
+                }
+            }
+        },
+        "api/mark-delivered-order/:orderId": {
+            "post": {
+                "tags": ["Orders"],
+                "description": "admin marks delivered order order",
+                "operationalId": "deliveredOrder",
+                "parameters": [
+                    {"content": {
+                        "appllication/json": {
+                            "schema": {
+                               
+                            }
+                        }
+                    }
+                }
+                ],
+                "requestBody": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                         
+                        }
+                      }
+                    }
+                }
+            }
+        },
+        "api/mark-pending-orders": {
+            "post": {
+                "tags": ["Orders"],
+                "description": "Mark all orders that were not delivered when the delivery time reaches",
+                "operationalId": "markPendingOrders",
+                "parameters": [
+                    {"content": {
+                        "appllication/json": {
+                            "schema": {
+                               
+                            }
+                        }
+                    }
+                }
+                ],
+                "requestBody": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                         
+                        }
+                      }
+                    }
+                }
+            }
+        },
+        "api/pending-orders": {
+            "get": {
+                "tags": ["Orders"],
+                "description": "Get all pending orders",
+                "operationalId": "getPendingOrders",
+                "parameters": [
+                    {"content": {
+                        "appllication/json": {
+                            "schema": {
+                               
+                            }
+                        }
+                    }
+                }
+                ],
+                "requestBody": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                         
+                        }
+                      }
+                    }
+                }
+            }
+        },
+        "api/my-orders": {
+            "get": {
+                "tags": ["Orders"],
+                "description": "Retrieves all orders of authenticated user",
+                "operationalId": "myOrders",
+                "parameters": [
+                    {"content": {
+                        "appllication/json": {
+                            "schema": {
+                               
+                            }
+                        }
+                    }
+                }
+                ],
+                "requestBody": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                         
+                        }
+                      }
+                    }
+                }
+            }
+        },
+        "api/user-orders/:userId": {
+            "get": {
+                "tags": ["Orders"],
+                "description": "Returns all orders set by user with id = userId, to only admins",
+                "operationalId": "userOrders",
+                "parameters": [
+                    {"content": {
+                        "appllication/json": {
+                            "schema": {
+                               
+                            }
+                        }
+                    }
+                }
+                ],
+                "requestBody": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                         
+                        }
+                      }
+                    }
+                }
+            }
+        },
+        "api/food-orders/:foodId": {
+            "get": {
+                "tags": ["Orders"],
+                "description": "Returns all orders for the food with the id = foodId",
+                "operationalId": "foodOrders",
+                "parameters": [
+                    {"content": {
+                        "appllication/json": {
+                            "schema": {
+                               
+                            }
+                        }
+                    }
+                }
+                ],
+                "requestBody": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                         
+                        }
+                      }
+                    }
+                }
+            }
+        },
+        "api/add-to-cart/:foodId": {
+            "post": {
+                "tags": ["Cart"],
+                "description": "Authenticated user adds food to cart or buy later",
+                "operationalId": "addToCart",
+                "parameters": [
+                    {"content": {
+                        "appllication/json": {
+                            "schema": {
+                               
+                            }
+                        }
+                    }
+                }
+                ],
+                "requestBody": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                         
+                        }
+                      }
+                    }
+                }
+            }
+        },
+        "api/remove-from-cart/:cartId": {
+            "post": {
+                "tags": ["Cart"],
+                "description": "Authenticated user removes cart",
+                "operationalId": "removeFromCart",
+                "parameters": [
+                    {"content": {
+                        "appllication/json": {
+                            "schema": {
+                               
+                            }
+                        }
+                    }
+                }
+                ],
+                "requestBody": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                         
+                        }
+                      }
+                    }
+                }
+            }
+        },
+        "api/my-cart": {
+            "get": {
+                "tags": ["Cart"],
+                "description": "Authenticated user gets all items in his/her cart",
+                "operationalId": "getCart",
+                "parameters": [
+                    {"content": {
+                        "appllication/json": {
+                            "schema": {
+                               
+                            }
+                        }
+                    }
+                }
+                ],
+                "requestBody": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                         
+                        }
+                      }
+                    }
+                }
+            }
+        },
+        "api/notifications": {
+            "get": {
+                "tags": ["Notifications"],
+                "description": "Admins gets notified when user creates new order",
+                "operationalId": "getNotifications",
+                "parameters": [
+                    {"content": {
+                        "appllication/json": {
+                            "schema": {
+                               
+                            }
+                        }
+                    }
+                }
+                ],
+                "requestBody": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                         
+                        }
+                      }
+                    }
+                }
+            }
+        },
+        "api/notification/:notificationId": {
+            "post": {
+                "tags": ["Notifications"],
+                "description": "Changes notification status when admin reads the notification",
+                "operationalId": "readNotification",
                 "parameters": [
                     {"content": {
                         "appllication/json": {
