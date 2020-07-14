@@ -51,10 +51,10 @@ exports.register = async ( req, res ) => {
                                 ( error, info ) => {
                                     if ( error ) {
                                         // console.log( error )
-                                        res.json( { output, error: `Error: ${error}`, msg: "Your account was created successfully" } )
+                                        res.json( { session: req.session, output, error: `Error: ${error}`, msg: "Your account was created successfully" } )
                                     } else {
                                         // console.log( info )
-                                        res.json( { output, msg: `Your account was registered successfully, check your email`, output } )
+                                        res.json( { session: req.session, output, msg: `Your account was registered successfully, check your email`, output } )
                                     }
                                 }
                             )
