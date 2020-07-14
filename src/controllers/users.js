@@ -71,7 +71,7 @@ exports.register = async ( req, res ) => {
 //login user with email
 exports.login = async ( req, res ) => {
     let { email, password } = req.body
-    let sql = "SELECT * from users where email = '" + email + "'"
+    let sql = "SELECT email, address, name, createdAt, dp_path, name, role, tel, location, id from users where email = '" + email + "'"
 
     const errors = validationResult( req )
 
