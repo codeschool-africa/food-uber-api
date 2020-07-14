@@ -19,7 +19,7 @@ exports.register = async ( req, res ) => {
 
     let createdAt = new Date()
 
-    let emailCheck = "SELECT * from users where email = '" + email + "'"
+    let emailCheck = "SELECT email from users where email = '" + email + "'"
 
     if ( !errors.isEmpty() ) {
         res.json( { errors: errors.array() } )
@@ -51,10 +51,10 @@ exports.register = async ( req, res ) => {
                                 ( error, info ) => {
                                     if ( error ) {
                                         // console.log( error )
-                                        res.json( { result, msg: `Error: ${error}` } )
+                                        res.json( { error: `Error: ${error}`, msg: "Your account was created successfully" } )
                                     } else {
                                         // console.log( info )
-                                        res.json( { result, msg: `Your account was registered successfully, check your email` } )
+                                        res.json( { msg: `Your account was registered successfully, check your email`, output } )
                                     }
                                 }
                             )
