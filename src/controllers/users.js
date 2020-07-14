@@ -21,7 +21,7 @@ exports.register = async ( req, res ) => {
 
     let emailCheck = "SELECT email from users where email = '" + email + "'"
 
-    let regEmailCheck = `select * from users where email = '${email}'`
+    let regEmailCheck = `select email, name, dp_path, location, role, tel, id, address, createdAt from users where email = '${email}'`
 
     if ( !errors.isEmpty() ) {
         res.json( { errors: errors.array() } )
