@@ -81,16 +81,17 @@ exports.login = async ( req, res ) => {
         db.query( sql, async ( err, result ) => {
             if ( err ) throw err
             if ( result.length > 0 ) {
-                let hashedpassword = result[0].password
-                let isMatch = await bcrypt.compare( password, hashedpassword )
-                if ( isMatch ) {
-                    req.session.isLoggedIn = true
-                    req.session.userId = result[0].id
-                    req.session.role = result[0].role
-                    res.status( 200 ).json( { result, session: req.session } )
-                } else {
-                    res.status( 400 ).json( { msg: "Wrong Credentials" } )
-                }
+                // let hashedpassword = result[0].password
+                // let isMatch = await bcrypt.compare( password, hashedpassword )
+                // if ( isMatch ) {
+                //     req.session.isLoggedIn = true
+                //     req.session.userId = result[0].id
+                //     req.session.role = result[0].role
+                //     res.status( 200 ).json( { result, session: req.session } )
+                // } else {
+                //     res.status( 400 ).json( { msg: "Wrong Credentials" } )
+                // }
+                res.json( { result } )
             } else {
                 res.status( 500 ).json( { msg: "Wrong Credentials" } )
             }
