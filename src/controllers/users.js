@@ -296,33 +296,33 @@ exports.uploadDp = async ( req, res ) => {
     let userCheck = `select * from users where id = '${req.session.userId}'`
 
     // if ( req.session.isLoggedIn && req.session.userId ) {
-    db.query( userCheck, ( err, output ) => {
-        if ( err ) throw err
-        if ( output && output.length > 0 ) {
-            upload( req, res, err => {
-                if ( err instanceof multer.MulterError ) {
-                    res.json( { msg: `${err}` } )
-                } else if ( err ) {
-                    res.json( { msg: `${err}` } )
+    // db.query( userCheck, ( err, output ) => {
+    //     if ( err ) throw err
+    //     if ( output && output.length > 0 ) {
+    upload( req, res, err => {
+        if ( err instanceof multer.MulterError ) {
+            res.json( { msg: `${err}` } )
+        } else if ( err ) {
+            res.json( { msg: `${err}` } )
+        } else {
+            // let sql = `update users set dp_path = '${req.file.name}' where id = '${req.session.userId}'`
+            let sql = `update users set dp_path = '${req.file.name}'`
+            db.query( sql, ( err, results ) => {
+                if ( err ) throw err
+                if ( results ) {
+                    res.status( 200 ).json( { results, msg: "Image was uploaded successful" } )
                 } else {
-                    // let sql = `update users set dp_path = '${req.file.name}' where id = '${req.session.userId}'`
-                    let sql = `update users set dp_path = '${req.file.name}'`
-                    db.query( sql, ( err, results ) => {
-                        if ( err ) throw err
-                        if ( results ) {
-                            res.status( 200 ).json( { results, msg: "Image was uploaded successful" } )
-                        } else {
-                            res.status( 500 ).json( { msg: "Internal server error" } )
-                        }
-                    } )
+                    res.status( 500 ).json( { msg: "Internal server error" } )
                 }
             } )
-        } else if ( output && output.length === 0 ) {
-            res.status( 404 ).json( { msg: "User not found" } )
-        } else {
-            res.status( 500 ).json( { msg: "Internal server error, please try again" } )
         }
     } )
+    // } else if ( output && output.length === 0 ) {
+    //     res.status( 404 ).json( { msg: "User not found" } )
+    // } else {
+    //     res.status( 500 ).json( { msg: "Internal server error, please try again" } )
+    // }
+    // } )
     // } else {
     //     res.status( 403 ).json( { msg: "Unauthorized" } )
     // }
