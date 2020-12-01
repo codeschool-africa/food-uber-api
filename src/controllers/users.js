@@ -45,7 +45,7 @@ exports.register = async (req, res) => {
                 const token = jwt.sign(
                   { id: output[0].id, role: output[0].role },
                   process.env.SECRET_TOKEN,
-                  { expiresIn: "1800000s" }
+                  { expiresIn: "2592000s" }
                 )
                 transporter.sendMail(
                   {
@@ -55,18 +55,14 @@ exports.register = async (req, res) => {
                   },
                   (error, info) => {
                     if (error) {
-                      // console.log( error )
-                      res.header("auth-token", token).json({
-                        // session: req.session,
+                      res.header("authorization", token).json({
                         token,
                         output,
                         error: `Error: ${error}`,
                         msg: "Your account was created successfully",
                       })
                     } else {
-                      // console.log( info )
                       res.header("auth-token", token).json({
-                        // session: req.session,
                         output,
                         token,
                         msg: `Your account was registered successfully, check your email`,
@@ -105,11 +101,11 @@ exports.login = async (req, res) => {
           const token = jwt.sign(
             { id: result[0].id, role: result[0].role },
             process.env.SECRET_TOKEN,
-            { expiresIn: "1800000s" }
+            { expiresIn: "2592000s" }
           )
           res
             .status(200)
-            .header("auth-token", token)
+            .header("authorization", token)
             .json({
               results: {
                 email: result[0].email,
@@ -194,30 +190,37 @@ exports.logout = async (req, res) => {
 // add/edit profile by authenticated user
 exports.addProfile = async (req, res) => {
   const { name, tel, location, homeAddress } = req.body
-  let userCheck = "SELECT * from users where id = '" + req.session.userId + "'"
-  let sql = `update users set name = '${name}', tel = '${tel}', location = '${location}', address = '${homeAddress}' where id = '${req.session.userId}'`
-  db.query(userCheck, (err, results) => {
-    if (err) throw err
-    if (results && results.length > 0) {
-      db.query(sql, (err, output) => {
-        if (err) throw err
-        if (output) {
-          res.status(200).json({ output, msg: "Profile updated" })
-        } else {
-          res.status(500).json({ msg: "internal server error" })
-        }
-      })
-    } else if (results && results.length === 0) {
-      res.status(404).json({ msg: "User not found" })
-    } else {
-      res.status(500).json({ msg: "Internal server error" })
-    }
-  })
+  let decoded
+  if (req.headers && req.headers.authorization) {
+    let authorization = req.headers.authorization
+    decoded = jwt.verify(authorization, process.env.SECRET_TOKEN)
+    let userCheck = "SELECT * from users where id = '" + decoded.id + "'"
+    let sql = `update users set name = '${name}', tel = '${tel}', location = '${location}', address = '${homeAddress}' where id = '${decoded.id}'`
+    db.query(userCheck, (err, results) => {
+      if (err) throw err
+      if (results && results.length > 0) {
+        db.query(sql, (err, output) => {
+          if (err) throw err
+          if (output) {
+            res.status(200).json({ output, msg: "Profile updated" })
+          } else {
+            res.status(500).json({ msg: "internal server error" })
+          }
+        })
+      } else if (results && results.length === 0) {
+        res.status(404).json({ msg: "User not found" })
+      } else {
+        res.status(500).json({ msg: "Internal server error" })
+      }
+    })
+  }
 }
 
 // settings
 // change email/password
 exports.settings = async (req, res) => {
+  let decoded
+
   const { email, newEmail, password, newPassword } = req.body
   let errors = validationResult(req)
 
@@ -225,61 +228,67 @@ exports.settings = async (req, res) => {
 
   let userCheck = `SELECT * from users where email = '${email}'`
   let emailCheck = `SELECT * from users where email = '${newEmail}'`
-  let sql = `update users set email = '${newEmail}', password = '${newHashedPassword}' where id = '${req.session.userId}'`
+  let sql = `update users set email = '${newEmail}', password = '${newHashedPassword}' where id = '${req.decoded.id}'`
 
-  if (!errors.isEmpty()) {
-    res.json({ errors: errors.array() })
-  } else {
-    db.query(userCheck, async (err, result) => {
-      if (err) throw err
-      if (result && result.length > 0) {
-        let hashedpassword = result[0].password
-        let isMatch = await bcrypt.compare(password, hashedpassword)
-        if (isMatch) {
-          if (newEmail === email) {
-            db.query(sql, (err, results) => {
-              if (err) throw err
-              if (results) {
-                res.json({ results })
-              } else {
-                res.status(500).json({ msg: "Internal server error" })
-              }
-            })
-          } else if (newEmail != email) {
-            db.query(emailCheck, (err, output) => {
-              if (err) throw err
-              if (output && output.length > 0) {
-                res.status(403).json({ msg: "Email already in use" })
-              } else if (output && output.length === 0) {
-                db.query(sql, (err, results) => {
-                  if (err) throw err
-                  if (results) {
-                    res.json({ results })
-                  } else {
-                    res.status(500).json({ msg: "Internal server error" })
-                  }
-                })
-              } else {
-                res
-                  .status(500)
-                  .json({ msg: "Internal server error, please try again" })
-              }
-            })
+  if (req.headers && req.headers.authorization) {
+    let authorization = req.headers.authorization
+    decoded = jwt.verify(authorization, process.env.SECRET_TOKEN)
+    if (!errors.isEmpty()) {
+      res.json({ errors: errors.array() })
+    } else {
+      db.query(userCheck, async (err, result) => {
+        if (err) throw err
+        if (result && result.length > 0) {
+          let hashedpassword = result[0].password
+          let isMatch = await bcrypt.compare(password, hashedpassword)
+          if (isMatch) {
+            if (newEmail === email) {
+              db.query(sql, (err, results) => {
+                if (err) throw err
+                if (results) {
+                  res.json({ results })
+                } else {
+                  res.status(500).json({ msg: "Internal server error" })
+                }
+              })
+            } else if (newEmail != email) {
+              db.query(emailCheck, (err, output) => {
+                if (err) throw err
+                if (output && output.length > 0) {
+                  res.status(403).json({ msg: "Email already in use" })
+                } else if (output && output.length === 0) {
+                  db.query(sql, (err, results) => {
+                    if (err) throw err
+                    if (results) {
+                      res.json({ results })
+                    } else {
+                      res.status(500).json({ msg: "Internal server error" })
+                    }
+                  })
+                } else {
+                  res
+                    .status(500)
+                    .json({ msg: "Internal server error, please try again" })
+                }
+              })
+            }
+          } else if (result && result.length === 0) {
+            res.status(403).json({ msg: "Wrong Credentials" })
+          } else {
+            res.status(500).json({ msg: "Internal server error" })
           }
-        } else if (result && result.length === 0) {
-          res.status(403).json({ msg: "Wrong Credentials" })
         } else {
-          res.status(500).json({ msg: "Internal server error" })
+          res.status(500).json({ msg: "Wrong Credentials" })
         }
-      } else {
-        res.status(500).json({ msg: "Wrong Credentials" })
-      }
-    })
+      })
+    }
   }
 }
 
 // upload profile image
 exports.uploadDp = async (req, res) => {
+  let decoded
+
   // create storage
   const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -321,111 +330,146 @@ exports.uploadDp = async (req, res) => {
     }
   }
 
-  let userCheck = `select * from users where id = '${req.session.userId}'`
+  let userCheck = `select * from users where id = '${req.decoded.id}'`
 
-  db.query(userCheck, (err, output) => {
-    if (err) throw err
-    if (output && output.length > 0) {
-      upload(req, res, (err) => {
-        if (err instanceof multer.MulterError) {
-          res.json({ msg: `${err}` })
-        } else if (err) {
-          res.json({ msg: `${err}` })
-        } else {
-          let sql = `update users set dp_path = '${req.file.name}' where id = '${req.session.userId}'`
-          db.query(sql, (err, results) => {
-            if (err) throw err
-            if (results) {
-              res
-                .status(200)
-                .json({ results, msg: "Image was uploaded successful" })
-            } else {
-              res.status(500).json({ msg: "Internal server error" })
-            }
-          })
-        }
-      })
-    } else if (output && output.length === 0) {
-      res.status(404).json({ msg: "User not found" })
-    } else {
-      res.status(500).json({ msg: "Internal server error, please try again" })
-    }
-  })
+  if (req.headers && req.headers.authorization) {
+    let authorization = req.headers.authorization
+    decoded = jwt.verify(authorization, process.env.SECRET_TOKEN)
+    db.query(userCheck, (err, output) => {
+      if (err) throw err
+      if (output && output.length > 0) {
+        upload(req, res, (err) => {
+          if (err instanceof multer.MulterError) {
+            res.json({ msg: `${err}` })
+          } else if (err) {
+            res.json({ msg: `${err}` })
+          } else {
+            let sql = `update users set dp_path = '${req.file.name}' where id = '${req.decoded.id}'`
+            db.query(sql, (err, results) => {
+              if (err) throw err
+              if (results) {
+                res
+                  .status(200)
+                  .json({ results, msg: "Image was uploaded successful" })
+              } else {
+                res.status(500).json({ msg: "Internal server error" })
+              }
+            })
+          }
+        })
+      } else if (output && output.length === 0) {
+        res.status(404).json({ msg: "User not found" })
+      } else {
+        res.status(500).json({ msg: "Internal server error, please try again" })
+      }
+    })
+  }
 }
 
 // get users on admins profile
 exports.getUsers = async (req, res) => {
+  let decoded
   let sql =
     "select name, email, tel, role, location, dp_path, address from users order by createdAt desc"
-  db.query(sql, (err, results) => {
-    if (err) throw err
-    if (results && results.length > 0) {
-      res.status(200).json({ results })
-    } else if (results && results.length === 0) {
-      res.status(500).json({ msg: "No user found" })
-    } else {
-      res.status(500).json({ msg: "Internal server error" })
+  if (req.headers && req.headers.authorization) {
+    let authorization = req.headers.authorization
+    decoded = jwt.verify(authorization, process.env.SECRET_TOKEN)
+    if (
+      (decoded.id && decoded.role === "admin") ||
+      decoded.role === "main-admin"
+    ) {
+      db.query(sql, (err, results) => {
+        if (err) throw err
+        if (results && results.length > 0) {
+          res.status(200).json({ results })
+        } else if (results && results.length === 0) {
+          res.status(500).json({ msg: "No user found" })
+        } else {
+          res.status(500).json({ msg: "Internal server error" })
+        }
+      })
     }
-  })
+  }
 }
 
 // get all admins in main-admins profile
 exports.getAdmins = async (req, res) => {
+  let decoded
   let sql = `select name, email, tel, role, location, dp_path, address from users where role = 'admin' || role = 'main-admin' order by createdAt desc`
-  db.query(sql, (err, results) => {
-    if (err) throw err
-    if (results && results.length > 0) {
-      res.status(200).json({ results })
-    } else if (results && results.length === 0) {
-      res.status(500).json({ msg: "No user found" })
-    } else {
-      res.status(500).json({ msg: "Internal server error" })
+  if (req.headers && req.headers.authorization) {
+    let authorization = req.headers.authorization
+    decoded = jwt.verify(authorization, process.env.SECRET_TOKEN)
+    if (decoded.id && decoded.role === "main-admin") {
+      db.query(sql, (err, results) => {
+        if (err) throw err
+        if (results && results.length > 0) {
+          res.status(200).json({ results })
+        } else if (results && results.length === 0) {
+          res.status(500).json({ msg: "No user found" })
+        } else {
+          res.status(500).json({ msg: "Internal server error" })
+        }
+      })
     }
-  })
+  }
 }
 
 // main-admin adds admin from users registered
 exports.addAdmin = async (req, res) => {
+  let decoded
   let userCheck = `select * from users where id = '${req.params.userId}'`
   let sql = `update users set role = 'admin' where id = '${req.params.userId}'`
-  db.query(userCheck, (err, output) => {
-    if (err) throw err
-    if (output && output.length > 0) {
-      if (output[0].role != "admin") {
-        db.query(sql, (err, results) => {
-          if (err) throw err
-          res.status(200).json({ results, msg: "Admin added" })
-        })
-      } else {
-        res.json({ msg: "User is already an admin" })
-      }
-    } else if (output && output.length === 0) {
-      res.status(404).json({ msg: "User not found" })
-    } else {
-      res.status(500).json({ msg: "Internal server error" })
+  if (req.headers && req.headers.authorization) {
+    let authorization = req.headers.authorization
+    decoded = jwt.verify(authorization, process.env.SECRET_TOKEN)
+    if (decoded.id && decoded.role === "main-admin") {
+      db.query(userCheck, (err, output) => {
+        if (err) throw err
+        if (output && output.length > 0) {
+          if (output[0].role != "admin") {
+            db.query(sql, (err, results) => {
+              if (err) throw err
+              res.status(200).json({ results, msg: "Admin added" })
+            })
+          } else {
+            res.json({ msg: "User is already an admin" })
+          }
+        } else if (output && output.length === 0) {
+          res.status(404).json({ msg: "User not found" })
+        } else {
+          res.status(500).json({ msg: "Internal server error" })
+        }
+      })
     }
-  })
+  }
 }
 
 //main-admin removes admin
 exports.removeAdmin = async (req, res) => {
+  let decoded
   let userCheck = `select * from users where id = '${req.params.userId}'`
   let sql = `update users set role = 'null' where id = '${req.params.userId}'`
-  db.query(userCheck, (err, output) => {
-    if (err) throw err
-    if (output && output.length > 0) {
-      if (output[0].role != "admin") {
-        res.json({ msg: "User already removed" })
-      } else {
-        db.query(sql, (err, results) => {
-          if (err) throw err
-          res.status(200).json({ results, msg: "Admin removed" })
-        })
-      }
-    } else if (output && output.length === 0) {
-      res.status(404).json({ msg: "User not found" })
-    } else {
-      res.status(500).json({ msg: "Internal server error" })
+  if (req.headers && req.headers.authorization) {
+    let authorization = req.headers.authorization
+    decoded = jwt.verify(authorization, process.env.SECRET_TOKEN)
+    if (decoded.id && decoded.role === "main-admin") {
+      db.query(userCheck, (err, output) => {
+        if (err) throw err
+        if (output && output.length > 0) {
+          if (output[0].role != "admin") {
+            res.json({ msg: "User already removed" })
+          } else {
+            db.query(sql, (err, results) => {
+              if (err) throw err
+              res.status(200).json({ results, msg: "Admin removed" })
+            })
+          }
+        } else if (output && output.length === 0) {
+          res.status(404).json({ msg: "User not found" })
+        } else {
+          res.status(500).json({ msg: "Internal server error" })
+        }
+      })
     }
-  })
+  }
 }

@@ -11,6 +11,7 @@ exports.addFood = async (req, res) => {
   let createdAt = new Date()
   let adminId = req.session.userId
   let sql = `INSERT INTO foods values (id,?,?,?,?,?,?,?)`
+  let decoded
 
   // upload food image
   // create storage
@@ -54,43 +55,47 @@ exports.addFood = async (req, res) => {
     }
   }
 
-  if (
-    (req.session.isLoggedIn && req.session.role === "admin") ||
-    req.session.role === "main-admin"
-  ) {
-    if (!errors.isEmpty()) {
-      res.json({ errors: errors.array() })
-    } else {
-      upload(req, res, (err) => {
-        if (err instanceof multer.MulterError) {
-          res.json({ msg: `${err}` })
-        } else if (err) {
-          res.json({ msg: `${err}` })
-        } else {
-          console.log(req.file)
-          db.query(
-            sql,
-            [
-              name,
-              description,
-              category,
-              cost,
-              featured,
-              createdAt,
-              adminId,
-              req.file.name,
-            ],
-            (err, results) => {
-              if (err) throw err
-              if (results) {
-                res.json({ results, msg: "Details uploaded successful" })
-              } else {
-                res.status(500).json({ msg: "Internal server error" })
+  if (req.headers && req.headers.authorization) {
+    let authorization = req.headers.authorization
+    decoded = jwt.verify(authorization, process.env.SECRET_TOKEN)
+    if (
+      (decoded.id && decoded.role === "admin") ||
+      decoded.role === "main-admin"
+    ) {
+      if (!errors.isEmpty()) {
+        res.json({ errors: errors.array() })
+      } else {
+        upload(req, res, (err) => {
+          if (err instanceof multer.MulterError) {
+            res.json({ msg: `${err}` })
+          } else if (err) {
+            res.json({ msg: `${err}` })
+          } else {
+            console.log(req.file)
+            db.query(
+              sql,
+              [
+                name,
+                description,
+                category,
+                cost,
+                featured,
+                createdAt,
+                adminId,
+                req.file.name,
+              ],
+              (err, results) => {
+                if (err) throw err
+                if (results) {
+                  res.json({ results, msg: "Details uploaded successful" })
+                } else {
+                  res.status(500).json({ msg: "Internal server error" })
+                }
               }
-            }
-          )
-        }
-      })
+            )
+          }
+        })
+      }
     }
   } else {
     res.status(403).json({ msg: "Unauthorized" })
@@ -101,24 +106,28 @@ exports.addFood = async (req, res) => {
 exports.updateFood = async (req, res) => {
   const { name, description, category, cost, featured } = req.body
   let sql = `update foods set name = '${name}', description = '${description}', category = '${category}', cost = '${cost}', featured = '${featured}' where id = '${req.params.foodId}'`
-
+  let decoded
   let errors = validationResult(req)
 
-  if (
-    (req.session.isLoggedIn && req.session.role === "admin") ||
-    req.session.role === "main-admin"
-  ) {
-    if (!errors.isEmpty()) {
-      res.json({ errors: errors.array() })
-    } else {
-      db.query(sql, (err, results) => {
-        if (err) throw err
-        if (results) {
-          res.json({ results, msg: "Food updated successful" })
-        } else {
-          res.status(500).json({ msg: "Internal server error" })
-        }
-      })
+  if (req.headers && req.headers.authorization) {
+    let authorization = req.headers.authorization
+    decoded = jwt.verify(authorization, process.env.SECRET_TOKEN)
+    if (
+      (decoded.id && decoded.role === "admin") ||
+      decoded.role === "main-admin"
+    ) {
+      if (!errors.isEmpty()) {
+        res.json({ errors: errors.array() })
+      } else {
+        db.query(sql, (err, results) => {
+          if (err) throw err
+          if (results) {
+            res.json({ results, msg: "Food updated successful" })
+          } else {
+            res.status(500).json({ msg: "Internal server error" })
+          }
+        })
+      }
     }
   } else {
     res.status(403).json({ msg: "Unauthorized" })
@@ -127,6 +136,7 @@ exports.updateFood = async (req, res) => {
 
 // upload food image
 exports.updateFoodImage = async (req, res) => {
+  let decoded
   // create storage
   const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -193,31 +203,35 @@ exports.updateFoodImage = async (req, res) => {
     })
   }
 
-  if (
-    (req.session.isLoggedIn && req.session.role === "admin") ||
-    req.session.role === "main-admin"
-  ) {
-    db.query(foodCheck, (err, output) => {
-      if (err) throw err
-      if (output && output.length > 0) {
-        let deletedImage = output[0].food_image
-        const path = `./public/assets/uploads/food_images/${deletedImage}`
-        if (deletedImage) {
-          try {
-            fs.unlink(path)
+  if (req.headers && req.headers.authorization) {
+    let authorization = req.headers.authorization
+    decoded = jwt.verify(authorization, process.env.SECRET_TOKEN)
+    if (
+      (decoded.id && decoded.role === "admin") ||
+      decoded.role === "main-admin"
+    ) {
+      db.query(foodCheck, (err, output) => {
+        if (err) throw err
+        if (output && output.length > 0) {
+          let deletedImage = output[0].food_image
+          const path = `./public/assets/uploads/food_images/${deletedImage}`
+          if (deletedImage) {
+            try {
+              fs.unlink(path)
+              uploadImage()
+            } catch (error) {
+              res.status(500).json({ msg: `Error: ${error}` })
+            }
+          } else {
             uploadImage()
-          } catch (error) {
-            res.status(500).json({ msg: `Error: ${error}` })
           }
+        } else if (output && output.length === 0) {
+          res.status(404).json({ msg: "Food not found" })
         } else {
-          uploadImage()
+          res.status(500).json({ msg: "Internal server error" })
         }
-      } else if (output && output.length === 0) {
-        res.status(404).json({ msg: "Food not found" })
-      } else {
-        res.status(500).json({ msg: "Internal server error" })
-      }
-    })
+      })
+    }
   } else {
     res.status(403).json({ msg: "Unauthorized" })
   }
@@ -227,27 +241,32 @@ exports.updateFoodImage = async (req, res) => {
 exports.deleteFood = async (req, res) => {
   let sql = `delete from foods where id = '${req.params.foodId}'`
   let foodIdCheck = `select * from foods where id = '${req.params.foodId}'`
-  if (
-    (req.session.isLoggedIn && req.session.role === "admin") ||
-    req.session.role === "main-admin"
-  ) {
-    db.query(foodIdCheck, (err, output) => {
-      if (err) throw err
-      if (output && output.length > 0) {
-        db.query(sql, (err, results) => {
-          if (err) throw err
-          if (results) {
-            res.json({ results, msg: "Food deleted successful" })
-          } else {
-            res.status(500).json({ msg: "internal server error" })
-          }
-        })
-      } else if (output && output.length === 0) {
-        res.status(404).json({ msg: "Food not found" })
-      } else {
-        res.status(500).json({ msg: "Ingternal server error" })
-      }
-    })
+  let decoded
+  if (req.headers && req.headers.authorization) {
+    let authorization = req.headers.authorization
+    decoded = jwt.verify(authorization, process.env.SECRET_TOKEN)
+    if (
+      (decoded.id && decoded.role === "admin") ||
+      decoded.role === "main-admin"
+    ) {
+      db.query(foodIdCheck, (err, output) => {
+        if (err) throw err
+        if (output && output.length > 0) {
+          db.query(sql, (err, results) => {
+            if (err) throw err
+            if (results) {
+              res.json({ results, msg: "Food deleted successful" })
+            } else {
+              res.status(500).json({ msg: "internal server error" })
+            }
+          })
+        } else if (output && output.length === 0) {
+          res.status(404).json({ msg: "Food not found" })
+        } else {
+          res.status(500).json({ msg: "Ingternal server error" })
+        }
+      })
+    }
   } else {
     res.status(403).json({ msg: "Unauthorized" })
   }
@@ -256,32 +275,37 @@ exports.deleteFood = async (req, res) => {
 exports.setFeaturedFood = async (req, res) => {
   let foodCheck = `select * from foods where id = '${req.params.foodId}'`
   let sql = `update foods set featured = '1' where id = '${req.params.foodId}'`
-  if (
-    (req.session.isLoggedIn && req.session.role === "admin") ||
-    req.session.role === "main-admin"
-  ) {
-    db.query(foodCheck, (err, output) => {
-      if (err) throw err
-      if (output && output.length > 0) {
-        if (output[0].featured === 1) {
-          res
-            .status(400)
-            .json({ msg: "Food already registered to featured list" })
+  let decoded
+  if (req.headers && req.headers.authorization) {
+    let authorization = req.headers.authorization
+    decoded = jwt.verify(authorization, process.env.SECRET_TOKEN)
+    if (
+      (decoded.id && decoded.role === "admin") ||
+      decoded.role === "main-admin"
+    ) {
+      db.query(foodCheck, (err, output) => {
+        if (err) throw err
+        if (output && output.length > 0) {
+          if (output[0].featured === 1) {
+            res
+              .status(400)
+              .json({ msg: "Food already registered to featured list" })
+          } else {
+            db.query(sql, (err, results) => {
+              if (results) {
+                res, json({ results, msg: "Food added in featured list" })
+              } else {
+                res.status(500).json({ msg: "Internal server error" })
+              }
+            })
+          }
+        } else if (output && output.length === 0) {
+          res.status(404).json({ msg: "Food not found" })
         } else {
-          db.query(sql, (err, results) => {
-            if (results) {
-              res, json({ results, msg: "Food added in featured list" })
-            } else {
-              res.status(500).json({ msg: "Internal server error" })
-            }
-          })
+          res.status(500).json({ msg: "Internal server error" })
         }
-      } else if (output && output.length === 0) {
-        res.status(404).json({ msg: "Food not found" })
-      } else {
-        res.status(500).json({ msg: "Internal server error" })
-      }
-    })
+      })
+    }
   } else {
     res.status(403).json({ msg: "Unauthorized" })
   }
@@ -290,33 +314,38 @@ exports.setFeaturedFood = async (req, res) => {
 exports.removeFeaturedFood = async (req, res) => {
   let foodCheck = `select * from foods where id = '${req.params.foodId}'`
   let sql = `update foods set featured = '0' where id = '${req.params.foodId}'`
-  if (
-    (req.session.isLoggedIn && req.session.role === "admin") ||
-    req.session.role === "main-admin"
-  ) {
-    db.query(foodCheck, (err, output) => {
-      if (err) throw err
-      if (output && output.length > 0) {
-        if (output[0].featured === 0) {
-          res
-            .status(400)
-            .json({ msg: "Food already removed from featured list" })
+  let decoded
+  if (req.headers && req.headers.authorization) {
+    let authorization = req.headers.authorization
+    decoded = jwt.verify(authorization, process.env.SECRET_TOKEN)
+    if (
+      (decoded.id && decoded.role === "admin") ||
+      decoded.role === "main-admin"
+    ) {
+      db.query(foodCheck, (err, output) => {
+        if (err) throw err
+        if (output && output.length > 0) {
+          if (output[0].featured === 0) {
+            res
+              .status(400)
+              .json({ msg: "Food already removed from featured list" })
+          } else {
+            db.query(sql, (err, results) => {
+              if (err) throw err
+              if (results) {
+                res, json({ results, msg: "Food removed in featured list" })
+              } else {
+                res.status(500).json({ msg: "Internal server error" })
+              }
+            })
+          }
+        } else if (output && output.length === 0) {
+          res.status(404).json({ msg: "Food not found" })
         } else {
-          db.query(sql, (err, results) => {
-            if (err) throw err
-            if (results) {
-              res, json({ results, msg: "Food removed in featured list" })
-            } else {
-              res.status(500).json({ msg: "Internal server error" })
-            }
-          })
+          res.status(500).json({ msg: "Internal server error" })
         }
-      } else if (output && output.length === 0) {
-        res.status(404).json({ msg: "Food not found" })
-      } else {
-        res.status(500).json({ msg: "Internal server error" })
-      }
-    })
+      })
+    }
   } else {
     res.status(403).json({ msg: "Unauthorized" })
   }

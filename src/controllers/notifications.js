@@ -1,22 +1,30 @@
-const db = require( "../models/db" )
+const db = require("../models/db")
 
 // get all notifications
-exports.notifications = async ( req, res ) => {
-    let sql = `select * from notifications`
-    if ( req.session.isLoggedIn && req.session.role === "admin" || req.session.role === "main-admin" ) {
-        db.query( sql, ( err, results ) => {
-            if ( err ) throw err
-            if ( results && results.length > 0 ) {
-                res.status( 200 ).json( { msg: "Notifications retrieved", results } )
-            } else if ( results && results.length === 0 ) {
-                res.status( 404 ).json( { msg: "No notification found" } )
-            } else {
-                res.status( 500 ).json( { msg: "Internal server error" } )
-            }
-        } )
-    } else {
-        res.status( 403 ).json( { msg: "Unauthorized" } )
+exports.notifications = async (req, res) => {
+  let sql = `select * from notifications`
+  let decoded
+  if (req.headers && req.headers.authorization) {
+    let authorization = req.headers.authorization
+    decoded = jwt.verify(authorization, process.env.SECRET_TOKEN)
+    if (
+      (decoded.id && decoded.role === "admin") ||
+      decoded.role === "main-admin"
+    ) {
+      db.query(sql, (err, results) => {
+        if (err) throw err
+        if (results && results.length > 0) {
+          res.status(200).json({ msg: "Notifications retrieved", results })
+        } else if (results && results.length === 0) {
+          res.status(404).json({ msg: "No notification found" })
+        } else {
+          res.status(500).json({ msg: "Internal server error" })
+        }
+      })
     }
+  } else {
+    res.status(403).json({ msg: "Unauthorized" })
+  }
 }
 
 // create notifications
@@ -54,29 +62,37 @@ exports.notifications = async ( req, res ) => {
 // }
 
 // read notification
-exports.readNotification = async ( req, res ) => {
-    let sql = `update notifications set read_status = '1' where id = '${req.params.notificationId}'`
-    let notificationCheck = `select * from notifications where id = '${req.params.notificationId}'`
+exports.readNotification = async (req, res) => {
+  let sql = `update notifications set read_status = '1' where id = '${req.params.notificationId}'`
+  let notificationCheck = `select * from notifications where id = '${req.params.notificationId}'`
+  let decoded
 
-    if ( req.session.isLoggedIn && req.session.role === "main-admin" || req.session.role === "admin" ) {
-        db.query( notificationCheck, ( err, output ) => {
-            if ( err ) throw err
-            if ( output && output.length > 0 ) {
-                db.query( sql, ( err, results ) => {
-                    if ( err ) throw err
-                    if ( results ) {
-                        res.status( 200 ).json( { msg: "Notification read", results } )
-                    } else {
-                        res.status( 500 ).json( { msg: "Internal server error" } )
-                    }
-                } )
-            } else if ( output && output.length === 0 ) {
-                res.status( 404 ).json( { msg: "Notification wasn't found " } )
+  if (req.headers && req.headers.authorization) {
+    let authorization = req.headers.authorization
+    decoded = jwt.verify(authorization, process.env.SECRET_TOKEN)
+    if (
+      (decoded.id && decoded.role === "admin") ||
+      decoded.role === "main-admin"
+    ) {
+      db.query(notificationCheck, (err, output) => {
+        if (err) throw err
+        if (output && output.length > 0) {
+          db.query(sql, (err, results) => {
+            if (err) throw err
+            if (results) {
+              res.status(200).json({ msg: "Notification read", results })
             } else {
-                res.status( 500 ).json( { msg: 'Internal server error' } )
+              res.status(500).json({ msg: "Internal server error" })
             }
-        } )
-    } else {
-        res.status( 403 ).json( { msg: 'Unauthorized' } )
+          })
+        } else if (output && output.length === 0) {
+          res.status(404).json({ msg: "Notification wasn't found " })
+        } else {
+          res.status(500).json({ msg: "Internal server error" })
+        }
+      })
     }
+  } else {
+    res.status(403).json({ msg: "Unauthorized" })
+  }
 }
