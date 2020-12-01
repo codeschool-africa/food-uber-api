@@ -149,7 +149,7 @@ exports.getOrders = async ( req, res ) => {
             if ( output && output.length > 0 ) {
                 res.status( 200 ).json( { output, msg: "Orders retrieved" } )
             } else {
-                res.status( 500 ).json( { msg: "Internal server error" } )
+                res.status( 500 ).json( { msg: "No order found" } )
             }
         } )
     } else {
