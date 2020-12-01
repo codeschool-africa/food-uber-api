@@ -48,7 +48,7 @@ const {
 const { addToCart, myCart, removeFromCart } = require("../controllers/cart")
 const {
   notifications,
-  createNotification,
+  // createNotification,
   readNotification,
 } = require("../controllers/notifications")
 
@@ -114,7 +114,7 @@ router.post(
 )
 
 // upload profile image
-router.post("/upload-dp", uploadDp)
+router.post("/upload-dp", verify, uploadDp)
 
 // get all users
 router.get("/users", verify, getUsers)
@@ -123,13 +123,13 @@ router.get("/users", verify, getUsers)
 router.get("/admins", verify, getAdmins)
 
 //main admin add admin
-router.post("/add-admin/:userId", addAdmin)
+router.post("/add-admin/:userId", verify, addAdmin)
 
 //main admin removes admins
-router.post("/remove-admin/:userId", removeAdmin)
+router.post("/remove-admin/:userId", verify, removeAdmin)
 
 // logout user
-router.post("/logout", logout)
+router.post("/logout", verify, logout)
 
 // foods
 //admin adds food
@@ -139,6 +139,7 @@ router.post(
     check("name", "Please include food name").trim().not().isEmpty(),
     check("cost", "Please Include cost").trim().not().isEmpty(),
   ],
+  verify,
   addFood
 )
 
@@ -149,20 +150,21 @@ router.post(
     check("name", "Please include food name").trim().not().isEmpty(),
     check("cost", "please include cost of this food").trim().not().isEmpty(),
   ],
+  verify,
   updateFood
 )
 
 // admin updates foodImage
-router.post("/update-food-image/:foodId", updateFoodImage)
+router.post("/update-food-image/:foodId", verify, updateFoodImage)
 
 //admin deletes food
-router.post("/delete-food/:foodId", deleteFood)
+router.post("/delete-food/:foodId", verify, deleteFood)
 
 // add featured food
-router.post("/add-featured-food/:foodId", setFeaturedFood)
+router.post("/add-featured-food/:foodId", verify, setFeaturedFood)
 
 // remove featured food
-router.post("remove-featured-food/:foodId", removeFeaturedFood)
+router.post("remove-featured-food/:foodId", verify, removeFeaturedFood)
 
 //retrieves all foods
 router.get("/get-foods", getFoods)
@@ -213,51 +215,52 @@ router.post(
       .isEmpty(),
     check("tel", "Please include your telephone number").trim().not().isEmpty(),
   ],
+  verify,
   editOrder
 )
 
 // delete order
-router.post("/delete-order/:orderId", deleteOrder)
+router.post("/delete-order/:orderId", verify, deleteOrder)
 
 //retrieves all orders
-router.get("/orders", getOrders)
+router.get("/orders", verify, getOrders)
 
 //gets a specific order
-router.get("/order/:orderId", getOrder)
+router.get("/order/:orderId", verify, getOrder)
 
 // delivered orders
-router.post("/mark-delivered-order/:orderId", markOrderAsDelivered)
+router.post("/mark-delivered-order/:orderId", verify, markOrderAsDelivered)
 
 // mark order as pending
-router.post("/mark-pending-orders", markOrderAsPending)
+router.post("/mark-pending-orders", verify, markOrderAsPending)
 
 // get pending orders
-router.get("/pending-orders", getPendingOrders)
+router.get("/pending-orders", verify, getPendingOrders)
 
 // get user orders
-router.get("/my-orders", myOrders)
+router.get("/my-orders", verify, myOrders)
 
 // get specific user order
-router.get("/user-orders/:userId", getUserOrders)
+router.get("/user-orders/:userId", verify, getUserOrders)
 
 // get specific food orders
-router.get("/food-orders/:foodId", getFoodOrders)
+router.get("/food-orders/:foodId", verify, getFoodOrders)
 
 // cart
 // add to cart
-router.post("/add-to-cart/:foodId", addToCart)
+router.post("/add-to-cart/:foodId", verify, addToCart)
 
 // remove from cart
-router.post("/remove-from-cart/:cartId", removeFromCart)
+router.post("/remove-from-cart/:cartId", verify, removeFromCart)
 
 // retrieve my carts
-router.get("/my-cart", myCart)
+router.get("/my-cart", verify, myCart)
 
 // notifications
 // get notifications // admin only
-router.get("/notifications", notifications)
+router.get("/notifications", verify, notifications)
 
 // read notification
-router.post("/notification/:notificationId", readNotification)
+router.post("/notification/:notificationId", verify, readNotification)
 
 module.exports = router
