@@ -301,8 +301,6 @@ exports.settings = async (req, res) => {
 
 // upload profile image
 exports.uploadDp = async (req, res) => {
-  let decoded
-
   // create storage
   const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -344,11 +342,11 @@ exports.uploadDp = async (req, res) => {
     }
   }
 
-  let userCheck = `select * from users where id = '${req.decoded.id}'`
-
   if (req.headers && req.headers.authorization) {
     let authorization = req.headers.authorization
+    let decoded
     decoded = jwt.verify(authorization, process.env.SECRET_TOKEN)
+    let userCheck = `select * from users where id = '${req.decoded.id}'`
     db.query(userCheck, (err, output) => {
       if (err) throw err
       if (output && output.length > 0) {
