@@ -11,6 +11,7 @@ const {
   register,
   login,
   addProfile,
+  getUserData,
   getUsers,
   getAdmins,
   addAdmin,
@@ -74,10 +75,7 @@ router.post(
 )
 
 //route to login both admin and customers
-router.post(
-  "/login",
-  login
-)
+router.post("/login", login)
 
 // password recovery
 router.post(
@@ -111,6 +109,9 @@ router.post(
 
 // upload profile image
 router.post("/upload-dp", verify, uploadDp)
+
+// get userData
+router.get("/auth", verify, getUserData)
 
 // get all users
 router.get("/users", verify, getUsers)
