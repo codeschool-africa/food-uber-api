@@ -82,7 +82,7 @@ exports.addFood = async (req, res) => {
                 featured,
                 createdAt,
                 adminId,
-                req.file.name,
+                req.file.filename,
               ],
               (err, results) => {
                 if (err) throw err
@@ -187,8 +187,8 @@ exports.updateFoodImage = async (req, res) => {
       } else if (err) {
         res.json({ msg: err })
       } else {
-        console.log(req.file)
-        let sql = `update foods set food_image = '${req.file.name}' where id = '${req.params.foodId}'`
+        // console.log(req.file)
+        let sql = `update foods set food_image = '${req.file.filename}' where id = '${req.params.foodId}'`
         db.query(sql, (err, results) => {
           if (err) throw err
           if (results) {

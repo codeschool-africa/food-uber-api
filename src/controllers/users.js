@@ -316,11 +316,14 @@ exports.uploadDp = async (req, res) => {
 
   // init upload variable
   const upload = multer({
-    storage: storage,
+    onFileUploadStart: function (file) {
+      console.log(file.originalname + " is starting ...")
+    },
     limits: { fileSize: 10000000 },
     fileFilter: (req, file, cb) => {
       checkFileType(file, cb)
     },
+    storage,
   }).single("dp")
 
   // check file type
@@ -346,7 +349,7 @@ exports.uploadDp = async (req, res) => {
     let authorization = req.headers.authorization
     let decoded
     decoded = jwt.verify(authorization, process.env.SECRET_TOKEN)
-    let userCheck = `select * from users where id = '${req.decoded.id}'`
+    let userCheck = `select * from users where id = '${decoded.id}'`
     db.query(userCheck, (err, output) => {
       if (err) throw err
       if (output && output.length > 0) {
@@ -354,12 +357,15 @@ exports.uploadDp = async (req, res) => {
           if (err instanceof multer.MulterError) {
             res.json({ msg: `${err}` })
           } else if (err) {
+            console.log(err)
             res.json({ msg: `${err}` })
           } else {
-            let sql = `update users set dp_path = '${req.file.name}' where id = '${req.decoded.id}'`
+            console.log(req.file.filename)
+            let sql = `update users set dp_path = '${req.file.filename}' where id = '${decoded.id}'`
             db.query(sql, (err, results) => {
               if (err) throw err
               if (results) {
+                console.log(results)
                 res
                   .status(200)
                   .json({ results, msg: "Image was uploaded successful" })
@@ -370,8 +376,10 @@ exports.uploadDp = async (req, res) => {
           }
         })
       } else if (output && output.length === 0) {
+        console.log("Not found", output)
         res.json({ msg: "User not found" })
       } else {
+        console.log("Not found")
         res.status(500).json({ msg: "Internal server error, please try again" })
       }
     })
