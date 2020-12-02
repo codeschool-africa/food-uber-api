@@ -1,20 +1,20 @@
-const mysql = require( "mysql" )
+const mysql = require("mysql")
 
 //config file contains all myql credentials
-const dbConfig = require( "../config/db.config" )
+const dbConfig = require("../config/db.config")
 
-const db = mysql.createConnection( {
-    host: dbConfig.host,
-    user: dbConfig.user,
-    password: dbConfig.password,
-    database: dbConfig.database,
-    multipleStatements: true
-} )
+const db = mysql.createConnection({
+  host: dbConfig.host,
+  user: dbConfig.user,
+  password: dbConfig.password,
+  database: dbConfig.database,
+  multipleStatements: true,
+})
 
-db.connect( ( err ) => {
-    if ( err ) throw err
-    console.log( "Database connected..." )
-} )
+db.connect((err) => {
+  if (err) throw err
+  console.log("Database connected...")
+})
 
 module.exports = db
 

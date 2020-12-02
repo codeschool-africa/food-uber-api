@@ -370,7 +370,7 @@ exports.uploadDp = async (req, res) => {
           }
         })
       } else if (output && output.length === 0) {
-        res.status(404).json({ msg: "User not found" })
+        res.json({ msg: "User not found" })
       } else {
         res.status(500).json({ msg: "Internal server error, please try again" })
       }
