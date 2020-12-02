@@ -24,7 +24,7 @@ exports.register = async (req, res) => {
   let regEmailCheck = `select email, name, dp_path, location, role, tel, id, address, createdAt from users where email = '${email}'`
 
   if (!errors.isEmpty()) {
-    res.json({ errors: errors.array() })
+    res.status(400).json({ errors: errors.array() })
   } else {
     //checks if email exists
     db.query(emailCheck, (err, results) => {
@@ -62,7 +62,7 @@ exports.register = async (req, res) => {
                         msg: "Your account was created successfully",
                       })
                     } else {
-                      res.header("auth-token", token).json({
+                      res.header("authorization", token).json({
                         output,
                         token,
                         msg: `Your account was registered successfully, check your email`,
@@ -117,7 +117,7 @@ exports.login = async (req, res) => {
         res.status(400).json({ msg: "Wrong Credentials" })
       }
     } else {
-      res.status(500).json({ msg: "Wrong Credentials" })
+      res.status(500).json({ msg: "Internal Sever Error" })
     }
   })
 }
@@ -178,6 +178,27 @@ exports.passwordRecovery = async (req, res) => {
 // logout user
 exports.logout = async (req, res) => {
   // res.status(200).json({ msg: "Logged out successfully" })
+}
+
+exports.getUserData = async (req, res) => {
+  if (req.headers && req.headers.authorization) {
+    let authorization = req.headers.authorization
+    let decoded = jwt.verify(authorization, process.env.SECRET_TOKEN)
+    let sql =
+      "SELECT email, name, dp_path, location, role, tel, id, address, createdAt from users where id = '" +
+      decoded.id +
+      "'"
+    db.query(sql, (err, results) => {
+      if (err) throw err
+      if (results && results.length > 0) {
+        res.status(200).json({ results })
+      } else if (results && results.length === 0) {
+        res.status(404).json({ msg: "User Not Found" })
+      } else {
+        res.status(500).json({ msg: "Internal Server Error" })
+      }
+    })
+  }
 }
 
 // add/edit profile by authenticated user
