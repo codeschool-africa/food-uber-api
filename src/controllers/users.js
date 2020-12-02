@@ -86,47 +86,40 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   let { email, password } = req.body
   let sql = "SELECT * from users where email = '" + email + "'"
-
-  const errors = validationResult(req)
-
-  if (!errors.isEmpty()) {
-    res.json({ errors: errors.array() })
-  } else {
-    db.query(sql, async (err, result) => {
-      if (err) throw err
-      if (result.length > 0) {
-        let hashedpassword = result[0].password
-        let isMatch = await bcrypt.compare(password, hashedpassword)
-        if (isMatch) {
-          const token = jwt.sign(
-            { id: result[0].id, role: result[0].role },
-            process.env.SECRET_TOKEN,
-            { expiresIn: "2592000s" }
-          )
-          res
-            .status(200)
-            .header("authorization", token)
-            .json({
-              results: {
-                email: result[0].email,
-                name: result[0].name,
-                dp_path: result[0].dp_path,
-                location: result[0].location,
-                tel: result[0].tel,
-                role: result[0].role,
-                address: result[0].address,
-                createdAt: result[0].createdAt,
-              },
-              token,
-            })
-        } else {
-          res.status(400).json({ msg: "Wrong Credentials" })
-        }
+  db.query(sql, async (err, result) => {
+    if (err) throw err
+    if (result.length > 0) {
+      let hashedpassword = result[0].password
+      let isMatch = await bcrypt.compare(password, hashedpassword)
+      if (isMatch) {
+        const token = jwt.sign(
+          { id: result[0].id, role: result[0].role },
+          process.env.SECRET_TOKEN,
+          { expiresIn: "2592000s" }
+        )
+        res
+          .status(200)
+          .header("authorization", token)
+          .json({
+            results: {
+              email: result[0].email,
+              name: result[0].name,
+              dp_path: result[0].dp_path,
+              location: result[0].location,
+              tel: result[0].tel,
+              role: result[0].role,
+              address: result[0].address,
+              createdAt: result[0].createdAt,
+            },
+            token,
+          })
       } else {
-        res.status(500).json({ msg: "Wrong Credentials" })
+        res.status(400).json({ msg: "Wrong Credentials" })
       }
-    })
-  }
+    } else {
+      res.status(500).json({ msg: "Wrong Credentials" })
+    }
+  })
 }
 
 // forgot password

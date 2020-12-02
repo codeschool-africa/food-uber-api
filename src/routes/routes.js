@@ -76,10 +76,6 @@ router.post(
 //route to login both admin and customers
 router.post(
   "/login",
-  [
-    check("email", "Please include a valid email").trim().not().isEmpty(),
-    check("password", "Password is required").trim().not().isEmpty(),
-  ],
   login
 )
 
