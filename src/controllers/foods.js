@@ -81,7 +81,7 @@ exports.addFood = async (req, res) => {
                 cost,
                 featured,
                 createdAt,
-                adminId,
+                decoded.id,
                 req.file.filename,
               ],
               (err, results) => {
