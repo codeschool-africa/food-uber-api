@@ -301,49 +301,50 @@ exports.settings = async (req, res) => {
 
 // upload profile image
 exports.uploadDp = async (req, res) => {
+  let { dp } = req.body
   // create storage
-  const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, "./public/assets/uploads/dp/")
-    },
-    filename: (req, file, cb) => {
-      cb(
-        null,
-        file.fieldname + "-" + Date.now() + path.extname(file.originalname)
-      )
-    },
-  })
+  // const storage = multer.diskStorage({
+  //   destination: (req, file, cb) => {
+  //     cb(null, "./public/assets/uploads/dp/")
+  //   },
+  //   filename: (req, file, cb) => {
+  //     cb(
+  //       null,
+  //       file.fieldname + "-" + Date.now() + path.extname(file.originalname)
+  //     )
+  //   },
+  // })
 
   // init upload variable
-  const upload = multer({
-    onFileUploadStart: function (file) {
-      console.log(file.originalname + " is starting ...")
-    },
-    limits: { fileSize: 10000000 },
-    fileFilter: (req, file, cb) => {
-      checkFileType(file, cb)
-    },
-    storage,
-  }).single("dp")
+  // const upload = multer({
+  //   onFileUploadStart: function (file) {
+  //     console.log(file.originalname + " is starting ...")
+  //   },
+  //   limits: { fileSize: 10000000 },
+  //   fileFilter: (req, file, cb) => {
+  //     checkFileType(file, cb)
+  //   },
+  //   storage,
+  // }).single("dp")
 
   // check file type
-  const checkFileType = (file, cb) => {
-    // allowed extenstion
-    const filetypes = /jpeg|jpg|png/
-    // check the ext
-    const extname = filetypes.test(
-      path.extname(file.originalname).toLowerCase()
-    )
+  // const checkFileType = (file, cb) => {
+  //   // allowed extenstion
+  //   const filetypes = /jpeg|jpg|png/
+  //   // check the ext
+  //   const extname = filetypes.test(
+  //     path.extname(file.originalname).toLowerCase()
+  //   )
 
-    // mimetype
-    const mimetype = filetypes.test(file.mimetype)
+  // mimetype
+  //   const mimetype = filetypes.test(file.mimetype)
 
-    if (extname && mimetype) {
-      return cb(null, true)
-    } else {
-      return cb("Upload .png, .jpg and .jpeg only")
-    }
-  }
+  //   if (extname && mimetype) {
+  //     return cb(null, true)
+  //   } else {
+  //     return cb("Upload .png, .jpg and .jpeg only")
+  //   }
+  // }
 
   if (req.headers && req.headers.authorization) {
     let authorization = req.headers.authorization
@@ -353,28 +354,40 @@ exports.uploadDp = async (req, res) => {
     db.query(userCheck, (err, output) => {
       if (err) throw err
       if (output && output.length > 0) {
-        upload(req, res, (err) => {
-          if (err instanceof multer.MulterError) {
-            res.json({ msg: `${err}` })
-          } else if (err) {
-            console.log(err)
-            res.json({ msg: `${err}` })
+        let sql = `update users set dp_path = '${dp}' where id = '${decoded.id}'`
+        db.query(sql, (err, results) => {
+          if (err) throw err
+          if (results) {
+            console.log(results)
+            res
+              .status(200)
+              .json({ results, msg: "Image was uploaded successful" })
           } else {
-            console.log(req.file.filename)
-            let sql = `update users set dp_path = '${req.file.filename}' where id = '${decoded.id}'`
-            db.query(sql, (err, results) => {
-              if (err) throw err
-              if (results) {
-                console.log(results)
-                res
-                  .status(200)
-                  .json({ results, msg: "Image was uploaded successful" })
-              } else {
-                res.status(500).json({ msg: "Internal server error" })
-              }
-            })
+            res.status(500).json({ msg: "Internal server error" })
           }
         })
+        // upload(req, res, (err) => {
+        //   if (err instanceof multer.MulterError) {
+        //     res.json({ msg: `${err}` })
+        //   } else if (err) {
+        //     console.log(err)
+        //     res.json({ msg: `${err}` })
+        //   } else {
+        //     console.log(req.file.filename)
+        //     let sql = `update users set dp_path = '${req.file.filename}' where id = '${decoded.id}'`
+        //     db.query(sql, (err, results) => {
+        //       if (err) throw err
+        //       if (results) {
+        //         console.log(results)
+        //         res
+        //           .status(200)
+        //           .json({ results, msg: "Image was uploaded successful" })
+        //       } else {
+        //         res.status(500).json({ msg: "Internal server error" })
+        //       }
+        //     })
+        //   }
+        // })
       } else if (output && output.length === 0) {
         console.log("Not found", output)
         res.json({ msg: "User not found" })
