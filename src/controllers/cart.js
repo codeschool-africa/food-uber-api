@@ -1,5 +1,6 @@
 const { validationResult } = require("express-validator")
 const db = require("../models/db")
+const jwt = require("jsonwebtoken")
 
 exports.addToCart = async (req, res) => {
   let createdAt = new Date()

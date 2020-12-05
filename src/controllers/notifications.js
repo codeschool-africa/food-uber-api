@@ -1,4 +1,5 @@
 const db = require("../models/db")
+const jwt = require("jsonwebtoken")
 
 // get all notifications
 exports.notifications = async (req, res) => {
