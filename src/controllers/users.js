@@ -191,7 +191,7 @@ exports.getUserData = async (req, res) => {
     db.query(sql, (err, results) => {
       if (err) throw err
       if (results && results.length > 0) {
-        res.status(200).json({ results })
+        res.status(200).json({ results: results[0] })
       } else if (results && results.length === 0) {
         res.status(404).json({ msg: "User Not Found" })
       } else {
