@@ -37,7 +37,8 @@ dotenv.config()
 app.use("/api", router)
 
 // parse requests of content-type: application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.urlencoded({ extended: true }))
+app.use(bodyParser.json({ extended: true }))
 
 app.use(express.static(path.join(__dirname, "/public")))
 
