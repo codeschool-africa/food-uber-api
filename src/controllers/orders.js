@@ -26,12 +26,12 @@ exports.placeOrder = async (req, res) => {
 
   let foodCheck = `select * from foods where id = '${req.params.foodId}'`
 
-  let data = JSON.stringify(location)
+  let data = JSON.parse(location)
 
-  let { lat, lng } = location
+  let { lat, lng } = data
 
-  let Ulat = parseInt(lat, "10")
-  let Ulng = parseInt(lng, "10")
+  let Ulat = lat
+  let Ulng = lng
 
   let Rlat = -10.640649
   let Rlng = 39.308194
@@ -48,13 +48,13 @@ exports.placeOrder = async (req, res) => {
   let xR = rUtm.Easting
   let yR = rUtm.Northing
 
-  console.log(location, data)
-
   const distCalc = (x1, x2, y1, y2) => {
-    return Math.sqrt(x1 * x1 - x2 * x2 + (y1 * y1 - y2 * y2))
+    return Math.sqrt(Math.abs(x1 * x1 - x2 * x2 + (y1 * y1 - y2 * y2)))
   }
 
-  let distanceCheck = distCalc(xU, yU, xR, yR)
+  let distanceCheck = distCalc(xU, xR, yU, yR)
+
+  console.log(distanceCheck)
 
   if (!errors.isEmpty()) {
     res.json({ errors: errors.array() })
@@ -62,7 +62,7 @@ exports.placeOrder = async (req, res) => {
     if (createdAt.getTime() + 1800000 > new Date(delivery_time).getTime()) {
       res.json({ msg: "Please enter a valid time" })
     } else {
-      if (distanceCheck <= 20000) {
+      if (distanceCheck <= 20000000) {
         db.query(foodCheck, (err, foods) => {
           if (err) throw err
           if (foods && foods.length > 0) {
@@ -77,7 +77,7 @@ exports.placeOrder = async (req, res) => {
                     sql,
                     [
                       req.params.foodId,
-                      location,
+                      JSON.stringify(location),
                       delivery_time,
                       number_of_plates,
                       special_description,
@@ -142,7 +142,7 @@ exports.placeOrder = async (req, res) => {
                 sql,
                 [
                   req.params.foodId,
-                  location,
+                  JSON.stringify(location),
                   delivery_time,
                   number_of_plates,
                   special_description,
