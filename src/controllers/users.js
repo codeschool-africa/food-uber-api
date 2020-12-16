@@ -24,13 +24,13 @@ exports.register = async (req, res) => {
   let regEmailCheck = `select email, name, dp_path, location, role, tel, id, address, createdAt from users where email = '${email}'`
 
   if (!errors.isEmpty()) {
-    res.status(400).json({ errors: errors.array() })
+    res.json({ errors: errors.array() })
   } else {
     //checks if email exists
     db.query(emailCheck, (err, results) => {
       if (err) throw err
       if (results.length > 0) {
-        res.status(400).json({ error: "email address already in use" })
+        res.json({ error: "email address already in use" })
       } else {
         //add user
         let sql = `INSERT INTO users values (uuid(),?,?,?,?, null,?, false,null, null,null)`
@@ -73,7 +73,7 @@ exports.register = async (req, res) => {
                 )
               })
             } else {
-              res.status(500).json({ result, msg: "Internal server error" })
+              res.json({ msg: "Internal server error" })
             }
           }
         )
