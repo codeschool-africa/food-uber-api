@@ -403,7 +403,7 @@ exports.uploadDp = async (req, res) => {
 exports.getUsers = async (req, res) => {
   let decoded
   let sql =
-    "select name, email, tel, role, location, dp_path, address from users order by createdAt desc"
+    "select name, email, tel, role, location, dp_path, id, address from users order by createdAt desc"
   if (req.headers && req.headers.authorization) {
     let authorization = req.headers.authorization
     decoded = jwt.verify(authorization, process.env.SECRET_TOKEN)
