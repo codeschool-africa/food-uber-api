@@ -444,7 +444,11 @@ exports.getUserOrders = async (req, res) => {
         if (output && output.length > 0) {
           db.query(sql, (err, results) => {
             if (err) throw err
-            res.json({ results })
+            if (results && results.length > 0) {
+              res.json({ results })
+            } else {
+              res.json({ msg: "No orders by this user" })
+            }
           })
         } else if (output && output.length === 0) {
           res.json({ msg: "User not found" })
