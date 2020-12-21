@@ -447,9 +447,9 @@ exports.getUserOrders = async (req, res) => {
             res.json({ results })
           })
         } else if (output && output.length === 0) {
-          res.status(404).json({ msg: "User not found" })
+          res.json({ msg: "User not found" })
         } else {
-          res.status(500).json({ msg: "Internal server error" })
+          res.json({ error: "Internal server error" })
         }
       })
     }
