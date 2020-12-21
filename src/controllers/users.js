@@ -359,11 +359,9 @@ exports.uploadDp = async (req, res) => {
           if (err) throw err
           if (results) {
             console.log(results)
-            res
-              .status(200)
-              .json({ results, msg: "Image was uploaded successful" })
+            res.json({ results, msg: "Image was uploaded successful" })
           } else {
-            res.status(500).json({ msg: "Internal server error" })
+            res.json({ msg: "Internal server error" })
           }
         })
         // upload(req, res, (err) => {
@@ -393,7 +391,7 @@ exports.uploadDp = async (req, res) => {
         res.json({ msg: "User not found" })
       } else {
         console.log("Not found")
-        res.status(500).json({ msg: "Internal server error, please try again" })
+        res.json({ msg: "Internal server error, please try again" })
       }
     })
   }
