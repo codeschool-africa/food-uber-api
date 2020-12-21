@@ -93,7 +93,7 @@ exports.addFood = async (req, res) => {
             if (results) {
               res.json({ results, msg: "Details uploaded successful" })
             } else {
-              res.status(500).json({ msg: "Internal server error" })
+              res.json({ error: "Internal server error" })
             }
           }
         )
@@ -102,7 +102,7 @@ exports.addFood = async (req, res) => {
     }
     // }
   } else {
-    res.status(403).json({ msg: "Unauthorized" })
+    res.json({ msg: "Unauthorized" })
   }
 }
 
@@ -126,86 +126,89 @@ exports.updateFood = async (req, res) => {
         db.query(sql, (err, results) => {
           if (err) throw err
           if (results) {
-            res.json({ results, msg: "Food updated successful" })
+            res.json({ msg: "Food updated successful" })
           } else {
-            res.status(500).json({ msg: "Internal server error" })
+            res.json({ error: "Internal server error" })
           }
         })
       }
     }
   } else {
-    res.status(403).json({ msg: "Unauthorized" })
+    res.json({ msg: "Unauthorized" })
   }
 }
 
 // upload food image
 exports.updateFoodImage = async (req, res) => {
   let decoded
+  let { food_image } = req.body
   // create storage
-  const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, "./public/assets/uploads/food_images/")
-    },
-    filename: (req, file, cb) => {
-      cb(
-        null,
-        file.fieldname + "-" + Date.now() + path.extname(file.originalname)
-      )
-    },
-  })
+  // const storage = multer.diskStorage({
+  //   destination: (req, file, cb) => {
+  //     cb(null, "./public/assets/uploads/food_images/")
+  //   },
+  //   filename: (req, file, cb) => {
+  //     cb(
+  //       null,
+  //       file.fieldname + "-" + Date.now() + path.extname(file.originalname)
+  //     )
+  //   },
+  // })
 
   // init upload variable
-  const upload = multer({
-    storage: storage,
-    limits: { fileSize: 10000000 },
-    fileFilter: (req, file, cb) => {
-      checkFileType(file, cb)
-    },
-  }).single("food_image")
+  // const upload = multer({
+  //   storage: storage,
+  //   limits: { fileSize: 10000000 },
+  //   fileFilter: (req, file, cb) => {
+  //     checkFileType(file, cb)
+  //   },
+  // }).single("food_image")
 
   // check file type
-  const checkFileType = (file, cb) => {
-    // allowed extenstion
-    const filetypes = /jpeg|jpg|png/
-    // check the ext
-    const extname = filetypes.test(
-      path.extname(file.originalname).toLowerCase()
-    )
+  // const checkFileType = (file, cb) => {
+  //   // allowed extenstion
+  //   const filetypes = /jpeg|jpg|png/
+  //   // check the ext
+  //   const extname = filetypes.test(
+  //     path.extname(file.originalname).toLowerCase()
+  //   )
 
-    // mimetype
-    const mimetype = filetypes.test(file.mimetype)
+  //   // mimetype
+  //   const mimetype = filetypes.test(file.mimetype)
 
-    if (extname && mimetype) {
-      return cb(null, true)
-    } else {
-      return cb("Upload .png, .jpg and .jpeg only")
-    }
-  }
+  //   if (extname && mimetype) {
+  //     return cb(null, true)
+  //   } else {
+  //     return cb("Upload .png, .jpg and .jpeg only")
+  //   }
+  // }
 
   let foodCheck = `select * from foods where id = '${req.params.foodId}'`
 
-  let uploadImage = () => {
-    upload(req, res, (err) => {
-      if (err instanceof multer.MulterError) {
-        res.json({ msg: err })
-      } else if (err) {
-        res.json({ msg: err })
-      } else {
-        // console.log(req.file)
-        let sql = `update foods set food_image = '${req.file.filename}' where id = '${req.params.foodId}'`
-        db.query(sql, (err, results) => {
-          if (err) throw err
-          if (results) {
-            res
-              .status(200)
-              .json({ results, msg: "Image was updated successfully" })
-          } else {
-            res.status(500).json({ msg: "Internal server error" })
-          }
-        })
-      }
-    })
-  }
+  let sql = `update foods set food_image = '${food_image}' where id = '${req.params.foodId}'`
+
+  // let uploadImage = () => {
+  //   upload(req, res, (err) => {
+  //     if (err instanceof multer.MulterError) {
+  //       res.json({ msg: err })
+  //     } else if (err) {
+  //       res.json({ msg: err })
+  //     } else {
+  //       // console.log(req.file)
+
+  //       db.query(sql, (err, results) => {
+  //         if (err) throw err
+  //         if (results) {
+  //           res
+  //             .status(200)
+  //             .json({ results, msg: "Image was updated successfully" })
+  //         } else {
+  //           res.status(500).json({ msg: "Internal server error" })
+  //         }
+  //       })
+  //     }
+  //   })
+  // }
 
   if (req.headers && req.headers.authorization) {
     let authorization = req.headers.authorization
@@ -217,27 +220,36 @@ exports.updateFoodImage = async (req, res) => {
       db.query(foodCheck, (err, output) => {
         if (err) throw err
         if (output && output.length > 0) {
-          let deletedImage = output[0].food_image
-          const path = `./public/assets/uploads/food_images/${deletedImage}`
-          if (deletedImage) {
-            try {
-              fs.unlink(path)
-              uploadImage()
-            } catch (error) {
-              res.status(500).json({ msg: `Error: ${error}` })
+          // let deletedImage = output[0].food_image
+          // const path = `./public/assets/uploads/food_images/${deletedImage}`
+          // if (deletedImage) {
+          //   try {
+          //     fs.unlink(path)
+          //     uploadImage()
+          //   } catch (error) {
+          //     res.status(500).json({ msg: `Error: ${error}` })
+          //   }
+          // } else {
+          //   uploadImage()
+          // }
+
+          db.query(sql, (err, results) => {
+            if (err) throw err
+            if (results) {
+              res.status(200).json({ msg: "Image was updated successfully" })
+            } else {
+              res.json({ error: "Internal server error" })
             }
-          } else {
-            uploadImage()
-          }
+          })
         } else if (output && output.length === 0) {
-          res.status(404).json({ msg: "Food not found" })
+          res.json({ msg: "Food not found" })
         } else {
-          res.status(500).json({ msg: "Internal server error" })
+          res.json({ msg: "Internal server error" })
         }
       })
     }
   } else {
-    res.status(403).json({ msg: "Unauthorized" })
+    res.json({ msg: "Unauthorized" })
   }
 }
 
@@ -259,20 +271,20 @@ exports.deleteFood = async (req, res) => {
           db.query(sql, (err, results) => {
             if (err) throw err
             if (results) {
-              res.json({ results, msg: "Food deleted successful" })
+              res.json({ msg: "Food deleted successful" })
             } else {
-              res.status(500).json({ msg: "internal server error" })
+              res.json({ error: "internal server error" })
             }
           })
         } else if (output && output.length === 0) {
-          res.status(404).json({ msg: "Food not found" })
+          res.json({ msg: "Food not found" })
         } else {
-          res.status(500).json({ msg: "Ingternal server error" })
+          res.json({ error: "Ingternal server error" })
         }
       })
     }
   } else {
-    res.status(403).json({ msg: "Unauthorized" })
+    res.json({ msg: "Unauthorized" })
   }
 }
 
