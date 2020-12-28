@@ -317,6 +317,21 @@ exports.setFeaturedFood = async (req, res) => {
   }
 }
 
+exports.setFavouriteFoods = async (req, res) => {
+  let { foods } = req.body
+
+  let sql = `update users set favourites = ${foods} where `
+  if (req.headers && req.headers.authorization) {
+    let authorization = req.headers.authorization
+    let decoded = jwt.verify(authorization, process.env.SECRET_TOKEN)
+    let sql = `update users set favourites = ${foods} where id = ${decoded.id}`
+    db.query(sql, (err, results) => {
+      if (err) throw err
+      if (results) res.json({ msg: "Food added" })
+    })
+  }
+}
+
 exports.removeFeaturedFood = async (req, res) => {
   let foodCheck = `select * from foods where id = '${req.params.foodId}'`
   let sql = `update foods set featured = '0' where id = '${req.params.foodId}'`

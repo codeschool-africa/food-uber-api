@@ -56,6 +56,14 @@ app.get("/createUsersTable", (req, res) => {
   })
 })
 
+app.get("/updateUsersTable", (req, res) => {
+  let sql = "Alter table users add column favourites longText"
+  db.query(sql, (err, result) => {
+    if (err) throw err
+    res.json(result)
+  })
+})
+
 app.get("/createFoodsTable", (req, res) => {
   let sql =
     "Create table foods(id int auto_increment Primary key not null, name varchar(255) not null, description varchar(255), category varchar(255), cost int(11) not null, featured tinyint(1) not null, createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP, createdBy varchar(255), food_image LONGTEXT, plates int(11) )"

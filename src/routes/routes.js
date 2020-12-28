@@ -33,6 +33,7 @@ const {
   setFeaturedFood,
   removeFeaturedFood,
   setFoodPlates,
+  setFavouriteFoods,
 } = require("../controllers/foods")
 const {
   placeOrder,
@@ -165,6 +166,8 @@ router.post("/add-featured-food/:foodId", verify, setFeaturedFood)
 
 // remove featured food
 router.post("remove-featured-food/:foodId", verify, removeFeaturedFood)
+
+router.post("/set-favourites", verify, setFavouriteFoods)
 
 //retrieves all foods
 router.get("/get-foods", getFoods)

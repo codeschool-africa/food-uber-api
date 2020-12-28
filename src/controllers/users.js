@@ -33,7 +33,7 @@ exports.register = async (req, res) => {
         res.json({ error: "email address already in use" })
       } else {
         //add user
-        let sql = `INSERT INTO users values (uuid(),?,?,?,?, null,?, false,null, null,null)`
+        let sql = `INSERT INTO users values (uuid(),?,?,?,?, null,?, false,null, null,null, null)`
         db.query(
           sql,
           [name, email, tel, hashedpassword, createdAt],
