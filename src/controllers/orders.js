@@ -6,39 +6,26 @@ const utmObj = require("utm-latlng")
 // const { createNotifications } = require( "./user" )
 
 exports.placeOrder = async (req, res) => {
-  const {
-    location,
-    special_description,
-    delivery_time,
-    number_of_plates,
-    tel,
-    orderedBy,
-    address,
-  } = req.body
+  const { location, foods, orderedBy, totalCost } = req.body
   const errors = validationResult(req)
   let createdAt = new Date()
 
-  let decoded
+  // let decoded
+  let delivery_cost
 
-  let sql = `insert into orders values (id,?,?,?,?,?,?,?,?,?,?,?,0,?)`
+  let sql = `insert into orders values (id,?,?,?,?,?,?,?)`
 
-  let notify = `insert into notifications values (id,?,?,?,?,?,0,?,?,?)`
-
-  let foodCheck = `select * from foods where id = '${req.params.foodId}'`
+  let notify = `insert into notifications values (id,?,?,?,0)`
 
   let data = JSON.parse(location)
 
-  let deliveryTime = JSON.parse(delivery_time)
-
   let { lat, lng } = data
-
-  let { date, time } = deliveryTime
 
   let Ulat = lat
   let Ulng = lng
 
-  let Rlat = 6.79936
-  let Rlng = 39.233126399999996
+  let Rlat = -6.8059
+  let Rlng = 39.2265728
 
   let utm = new utmObj()
 
@@ -58,174 +45,278 @@ exports.placeOrder = async (req, res) => {
 
   let distanceCheck = distCalc(xU, xR, yU, yR)
 
-  // let Hr = time.getHours()
-  let hour = time.split(":")
-
-  if (!errors.isEmpty()) {
-    res.json({ errors: errors.array() })
+  if (totalCost < 5000 && distanceCheck > 1000) {
+    delivery_cost = 2000
+  } else if (totalCost > 19999 && distanceCheck < 10000) {
+    delivery_cost = 0
+  } else if (distanceCheck > 30000) {
+    delivery_cost = (distanceCheck / 1000) * 50
   } else {
-    if (8 <= hour[0] <= 21) {
-      console.log(hour[0])
-      if (createdAt.getTime() + 1800000 > new Date(delivery_time).getTime()) {
-        res.json({ msg: "Please enter a valid time" })
-      } else {
-        console.log(date, time, hour)
-        if (distanceCheck <= 200000) {
-          db.query(foodCheck, (err, foods) => {
+    delivery_cost = 1000
+  }
+
+  let parsedFoods = JSON.parse(foods)
+
+  const createNotification = (order) => {
+    db.query(notify, [order[0].id, "new order", createdAt], (err, results) => {
+      if (err) throw err
+      res.json({ msg: "Order placed successful" })
+    })
+  }
+
+  const uploadOrder = (availablePlates, food) => {
+    db.query(
+      sql,
+      [foods, location, createdAt, orderedBy, 0, 0, delivery_cost],
+      (err, output) => {
+        if (err) throw err
+        if (output && output.insertId) {
+          // check for the order in the database
+          let orderCheck = `select * from orders where id = '${output.insertId}'`
+          let remainPlates = food.plates - availablePlates
+          let updatePlates = `update foods set plates = '${remainPlates}' where id = '${food.id}'`
+          db.query(orderCheck, (err, order) => {
             if (err) throw err
-            if (foods && foods.length > 0) {
-              if (req.headers && req.headers.authorization) {
-                let authorization = req.headers.authorization
-                decoded = jwt.verify(authorization, process.env.SECRET_TOKEN)
-                let userCheck = `select * from users where id = '${decoded.id}'`
-                db.query(userCheck, (err, output) => {
-                  if (err) throw err
-                  if (output && output.length > 0) {
-                    db.query(
-                      sql,
-                      [
-                        req.params.foodId,
-                        JSON.stringify(location),
-                        delivery_time,
-                        number_of_plates,
-                        special_description,
-                        createdAt,
-                        output[0].name,
-                        tel,
-                        address,
-                        decoded.id,
-                        0,
-                        foods[0].name,
-                      ],
-                      (err, results) => {
-                        if (err) throw err
-                        let orderCheck = `select * from orders where id = '${results.insertId}'`
-                        db.query(orderCheck, (err, order) => {
-                          if (err) throw err
-                          if (order && order.length > 0) {
-                            db.query(
-                              notify,
-                              [
-                                results.insertId,
-                                output[0].name,
-                                output[0].id,
-                                "New order",
-                                createdAt,
-                                foods[0].name,
-                                order[0].number_of_plates,
-                                order[0].delivery_time,
-                              ],
-                              (err, result) => {
-                                if (err) throw err
-                                res.status(200).json({
-                                  results,
-                                  result,
-                                  foods,
-                                  order,
-                                  msg: "Order placed successfully",
-                                })
-                              }
-                            )
-                          } else if (order && order.length === 0) {
-                            res.json({
-                              msg:
-                                "Your request couldn't be processed, please try again",
-                            })
-                          } else {
-                            res.json({
-                              err:
-                                "Internal server error, couldn't send a notification",
-                              msg: "Order placed successfully",
-                            })
-                          }
-                        })
-                      }
-                    )
-                  } else {
-                    res.status(500).json({ msg: "Internal server error" })
-                  }
-                })
-              } else {
-                db.query(
-                  sql,
-                  [
-                    req.params.foodId,
-                    JSON.stringify(location),
-                    delivery_time,
-                    number_of_plates,
-                    special_description,
-                    createdAt,
-                    orderedBy,
-                    tel,
-                    address,
-                    null,
-                    0,
-                    foods[0].name,
-                  ],
-                  (err, results) => {
-                    if (err) throw err
-                    let orderCheck = `select * from orders where id = '${results.insertId}'`
-                    db.query(orderCheck, (err, order) => {
-                      if (err) throw err
-                      if (order && order.length > 0) {
-                        db.query(
-                          notify,
-                          [
-                            results.insertId,
-                            orderedBy,
-                            null,
-                            "New order",
-                            createdAt,
-                            foods[0].name,
-                            order[0].number_of_plates,
-                            order[0].delivery_time,
-                          ],
-                          (err, result) => {
-                            if (err) throw err
-                            res.status(200).json({
-                              results,
-                              result,
-                              foods,
-                              order,
-                              msg: "Order placed successfully",
-                            })
-                          }
-                        )
-                      } else if (order && order.length === 0) {
-                        res.json({
-                          msg:
-                            "Your request couldn't be processed, please try again",
-                        })
-                      } else {
-                        res.json({
-                          err:
-                            "Internal server error, couldn't send a notification",
-                          msg: "Order placed successfully",
-                        })
-                      }
-                    })
-                  }
-                )
-              }
-            } else if (foods && foods.length === 0) {
-              res
-                .status(404)
-                .json({ msg: "Food not found, this order can't be placed" })
-            } else {
-              res
-                .status(500)
-                .json({ msg: "Internal server error, please try again" })
+            if (order && order.length > 0) {
+              db.query(updatePlates, (err, result) => {
+                if (err) throw err
+                if (result) {
+                  createNotification(order)
+                }
+              })
             }
           })
         } else {
-          res.json({ msg: "Distance Unreachable" })
+          res.json({
+            error: "Couldn't place your order, please try again",
+          })
         }
       }
-    } else if (21 < hour[0] < 0) {
-      console.log(hour, time)
-      res.json({ msg: "Closing time" })
+    )
+  }
+
+  if (!errors.isEmpty()) {
+    res.json({ errors: errors.array })
+  } else {
+    if (distanceCheck <= 50000) {
+      parsedFoods.forEach((food) => {
+        // console.log(food)
+        let foodCheck = `select * from foods where id = '${food.id}'`
+        // checks if food is available
+        db.query(foodCheck, (err, output) => {
+          if (err) throw err
+          if (
+            output &&
+            output.length > 0 &&
+            (output[0].plates < food.plates || output[0].plates === null)
+          ) {
+            res.json({ msg: `${food.name} not available right now` })
+          } else if (
+            output &&
+            output.length > 0 &&
+            output[0].plates <= food.plates &&
+            output[0].plates !== null
+          ) {
+            // checks time
+            // console.log(output[0].plates)
+            let availablePlates = output[0].plates
+            let deliveryTime = food.delivery_time
+            let time = new Date(deliveryTime)
+            let hour = parseInt(time.getHours())
+            if (hour < 8 || hour > 21) {
+              res.json({ msg: `We are closed during this hours ${time} ` })
+            } else if (8 <= hour <= 21) {
+              if (createdAt.getTime() + 1800000 > time.getTime()) {
+                res.json({
+                  msg: "Error: we need atleast 30 minutes to deliver this food",
+                })
+              } else {
+                uploadOrder(availablePlates, food)
+              }
+            } else {
+              res.json({
+                error: "Internal server error",
+              })
+            }
+          } else if (output && output.length === 0) {
+            res.json({
+              msg: `${food.name} not found`,
+            })
+          }
+        })
+      })
+    } else {
+      res.json({
+        error: "Your location isn't covered by our delivery services",
+      })
     }
   }
+
+  // if (!errors.isEmpty()) {
+  //   res.json({ errors: errors.array() })
+  // } else {
+  //   if (8 <= hour[0] <= 21) {
+  //     console.log(hour[0])
+  //     if (createdAt.getTime() + 1800000 > new Date(delivery_time).getTime()) {
+  //       res.json({ msg: "Please enter a valid time" })
+  //     } else {
+  //       console.log(date, time, hour)
+  //       if (distanceCheck <= 2000000000) {
+  //         db.query(foodCheck, (err, foods) => {
+  //           if (err) throw err
+  //           if (foods && foods.length > 0) {
+  //             if (req.headers && req.headers.authorization) {
+  //               let authorization = req.headers.authorization
+  //               decoded = jwt.verify(authorization, process.env.SECRET_TOKEN)
+  //               let userCheck = `select * from users where id = '${decoded.id}'`
+  //               db.query(userCheck, (err, output) => {
+  //                 if (err) throw err
+  //                 if (output && output.length > 0) {
+  //                   db.query(
+  //                     sql,
+  //                     [
+  //                       req.params.foodId,
+  //                       JSON.stringify(location),
+  //                       delivery_time,
+  //                       number_of_plates,
+  //                       special_description,
+  //                       createdAt,
+  //                       output[0].name,
+  //                       tel,
+  //                       address,
+  //                       decoded.id,
+  //                       0,
+  //                       foods[0].name,
+  //                     ],
+  //                     (err, results) => {
+  //                       if (err) throw err
+  //                       let orderCheck = `select * from orders where id = '${results.insertId}'`
+  //                       db.query(orderCheck, (err, order) => {
+  //                         if (err) throw err
+  //                         if (order && order.length > 0) {
+  //                           db.query(
+  //                             notify,
+  //                             [
+  //                               results.insertId,
+  //                               output[0].name,
+  //                               output[0].id,
+  //                               "New order",
+  //                               createdAt,
+  //                               foods[0].name,
+  //                               order[0].number_of_plates,
+  //                               order[0].delivery_time,
+  //                             ],
+  //                             (err, result) => {
+  //                               if (err) throw err
+  //                               res.status(200).json({
+  //                                 results,
+  //                                 result,
+  //                                 foods,
+  //                                 order,
+  //                                 msg: "Order placed successfully",
+  //                               })
+  //                             }
+  //                           )
+  //                         } else if (order && order.length === 0) {
+  //                           res.json({
+  //                             msg:
+  //                               "Your request couldn't be processed, please try again",
+  //                           })
+  //                         } else {
+  //                           res.json({
+  //                             err:
+  //                               "Internal server error, couldn't send a notification",
+  //                             msg: "Order placed successfully",
+  //                           })
+  //                         }
+  //                       })
+  //                     }
+  //                   )
+  //                 } else {
+  //                   res.status(500).json({ msg: "Internal server error" })
+  //                 }
+  //               })
+  //             } else {
+  //               db.query(
+  //                 sql,
+  //                 [
+  //                   req.params.foodId,
+  //                   JSON.stringify(location),
+  //                   delivery_time,
+  //                   number_of_plates,
+  //                   special_description,
+  //                   createdAt,
+  //                   orderedBy,
+  //                   tel,
+  //                   address,
+  //                   null,
+  //                   0,
+  //                   foods[0].name,
+  //                 ],
+  //                 (err, results) => {
+  //                   if (err) throw err
+  //                   let orderCheck = `select * from orders where id = '${results.insertId}'`
+  //                   db.query(orderCheck, (err, order) => {
+  //                     if (err) throw err
+  //                     if (order && order.length > 0) {
+  //                       db.query(
+  //                         notify,
+  //                         [
+  //                           results.insertId,
+  //                           orderedBy,
+  //                           null,
+  //                           "New order",
+  //                           createdAt,
+  //                           foods[0].name,
+  //                           order[0].number_of_plates,
+  //                           order[0].delivery_time,
+  //                         ],
+  //                         (err, result) => {
+  //                           if (err) throw err
+  //                           res.status(200).json({
+  //                             results,
+  //                             result,
+  //                             foods,
+  //                             order,
+  //                             msg: "Order placed successfully",
+  //                           })
+  //                         }
+  //                       )
+  //                     } else if (order && order.length === 0) {
+  //                       res.json({
+  //                         msg:
+  //                           "Your request couldn't be processed, please try again",
+  //                       })
+  //                     } else {
+  //                       res.json({
+  //                         err:
+  //                           "Internal server error, couldn't send a notification",
+  //                         msg: "Order placed successfully",
+  //                       })
+  //                     }
+  //                   })
+  //                 }
+  //               )
+  //             }
+  //           } else if (foods && foods.length === 0) {
+  //             res
+  //               .status(404)
+  //               .json({ msg: "Food not found, this order can't be placed" })
+  //           } else {
+  //             res
+  //               .status(500)
+  //               .json({ msg: "Internal server error, please try again" })
+  //           }
+  //         })
+  //       } else {
+  //         res.json({ msg: "Distance Unreachable" })
+  //       }
+  //     }
+  //   } else if (21 < hour[0] < 0) {
+  //     console.log(hour, time)
+  //     res.json({ msg: "Closing time" })
+  //   }
+  // }
 }
 
 exports.editOrder = async (req, res) => {

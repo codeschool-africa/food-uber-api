@@ -32,6 +32,7 @@ const {
   search,
   setFeaturedFood,
   removeFeaturedFood,
+  setFoodPlates,
 } = require("../controllers/foods")
 const {
   placeOrder,
@@ -151,6 +152,8 @@ router.post(
   updateFood
 )
 
+router.post("/add-plates/:foodId", verify, setFoodPlates)
+
 // admin updates foodImage
 router.post("/update-food-image/:foodId", verify, updateFoodImage)
 
@@ -185,16 +188,12 @@ router.post(
 
 //user places an order
 router.post(
-  "/order/:foodId",
+  "/order-foods",
   [
-    check("location", "Please include your location").trim().not().isEmpty(),
-    check("delivery_time", "Please add delivery time").trim().not().isEmpty(),
-    check("number_of_plates", "Please include number of plates")
-      .trim()
-      .not()
-      .isEmpty(),
-    check("tel", "Please include your telephone number").trim().not().isEmpty(),
-    // check( "orderedBy", "Please include your name" ).trim().not().isEmpty()
+    // check("location", "Please include your location").trim().not().isEmpty(),
+    // check("foods", "Foods is required").trim().not().isEmpty(),
+    // check("orderedBy", "Please add your information").trim().not().isEmpty(),
+    // check("totaPrice", "Total price is required").trim().not().isEmpty(),
   ],
   placeOrder
 )
@@ -205,12 +204,9 @@ router.post(
   "/edit-order/:orderId",
   [
     check("location", "Please include your location").trim().not().isEmpty(),
-    check("delivery_time", "Please add delivery time").trim().not().isEmpty(),
-    check("number_of_plates", "Please include number of plates")
-      .trim()
-      .not()
-      .isEmpty(),
-    check("tel", "Please include your telephone number").trim().not().isEmpty(),
+    check("foods", "Foods is required").trim().not().isEmpty(),
+    check("orderedBy", "Please add your information").trim().not().isEmpty(),
+    check("totaPrice", "Total price is required").trim().not().isEmpty(),
   ],
   verify,
   editOrder

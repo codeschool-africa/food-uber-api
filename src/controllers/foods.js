@@ -7,56 +7,22 @@ const jwt = require("jsonwebtoken")
 
 // add food by admin
 exports.addFood = async (req, res) => {
-  const { name, description, category, cost, featured, food_image } = req.body
+  const {
+    name,
+    description,
+    category,
+    cost,
+    featured,
+    food_image,
+    plates,
+  } = req.body
   const errors = validationResult(req)
   let createdAt = new Date()
   // let adminId = req.session.userId
-  let sql = `INSERT INTO foods values (id,?,?,?,?,?,?,?,?)`
+  let sql = `INSERT INTO foods values (id,?,?,?,?,?,?,?,?,?)`
   let decoded
 
   let StringfiedCategory = JSON.stringify(category)
-
-  // upload food image
-  // create storage
-  // const storage = multer.diskStorage({
-  //   destination: (req, file, cb) => {
-  //     cb(null, "./public/assets/uploads/food_images/")
-  //   },
-  //   filename: (req, file, cb) => {
-  //     cb(
-  //       null,
-  //       file.fieldname + "-" + Date.now() + path.extname(file.originalname)
-  //     )
-  //   },
-  // })
-
-  // init upload variable
-  // const upload = multer({
-  //   storage: storage,
-  //   limits: { fileSize: 10000000 },
-  //   fileFilter: (req, file, cb) => {
-  //     checkFileType(file, cb)
-  //   },
-  // }).single("food_image")
-
-  // check file type
-  // const checkFileType = (file, cb) => {
-  //   // allowed extenstion
-  //   const filetypes = /jpeg|jpg|png/
-  //   // check the ext
-  //   const extname = filetypes.test(
-  //     path.extname(file.originalname).toLowerCase()
-  //   )
-
-  //   // mimetype
-  //   const mimetype = filetypes.test(file.mimetype)
-
-  //   if (extname && mimetype) {
-  //     return cb(null, true)
-  //   } else {
-  //     return cb("Upload .png, .jpg and .jpeg only")
-  //   }
-  // }
 
   if (req.headers && req.headers.authorization) {
     let authorization = req.headers.authorization
@@ -68,13 +34,6 @@ exports.addFood = async (req, res) => {
       if (!errors.isEmpty()) {
         res.json({ errors: errors.array() })
       } else {
-        // upload(req, res, (err) => {
-        //   if (err instanceof multer.MulterError) {
-        //     res.json({ msg: `${err}` })
-        //   } else if (err) {
-        //     res.json({ msg: `${err}` })
-        //   } else {
-        //     console.log(req.file)
         db.query(
           sql,
           [
@@ -85,8 +44,8 @@ exports.addFood = async (req, res) => {
             featured,
             createdAt,
             decoded.id,
-            // req.file.filename,
             food_image,
+            plates,
           ],
           (err, results) => {
             if (err) throw err
@@ -108,8 +67,8 @@ exports.addFood = async (req, res) => {
 
 // update food by admin
 exports.updateFood = async (req, res) => {
-  const { name, description, category, cost, featured } = req.body
-  let sql = `update foods set name = '${name}', description = '${description}', category = '${category}', cost = '${cost}', featured = '${featured}' where id = '${req.params.foodId}'`
+  const { name, description, category, cost, featured, plates } = req.body
+  let sql = `update foods set name = '${name}', description = '${description}', category = '${category}', cost = '${cost}', featured = '${featured}', plates = '${plates}' where id = '${req.params.foodId}'`
   let decoded
   let errors = validationResult(req)
 
@@ -127,6 +86,37 @@ exports.updateFood = async (req, res) => {
           if (err) throw err
           if (results) {
             res.json({ msg: "Food updated successful" })
+          } else {
+            res.json({ error: "Internal server error" })
+          }
+        })
+      }
+    }
+  } else {
+    res.json({ msg: "Unauthorized" })
+  }
+}
+
+exports.setFoodPlates = async (req, res) => {
+  const { plates } = req.body
+  let sql = `update foods set plates = '${plates}' where id = '${req.params.foodId}'`
+  let decoded
+  let errors = validationResult(req)
+
+  if (req.headers && req.headers.authorization) {
+    let authorization = req.headers.authorization
+    decoded = jwt.verify(authorization, process.env.SECRET_TOKEN)
+    if (
+      (decoded.id && decoded.role === "admin") ||
+      decoded.role === "main-admin"
+    ) {
+      if (!errors.isEmpty()) {
+        res.json({ errors: errors.array() })
+      } else {
+        db.query(sql, (err, results) => {
+          if (err) throw err
+          if (results) {
+            res.json({ msg: "Plates added successful" })
           } else {
             res.json({ error: "Internal server error" })
           }
