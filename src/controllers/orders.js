@@ -98,7 +98,7 @@ exports.placeOrder = async (req, res) => {
   if (!errors.isEmpty()) {
     res.json({ errors: errors.array })
   } else {
-    if (distanceCheck <= 50000) {
+    if (distanceCheck <= 500000000) {
       parsedFoods.forEach((food) => {
         // console.log(food)
         let foodCheck = `select * from foods where id = '${food.id}'`
