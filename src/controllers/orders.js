@@ -24,8 +24,8 @@ exports.placeOrder = async (req, res) => {
   let Ulat = lat
   let Ulng = lng
 
-  let Rlat = -6.8059
-  let Rlng = 39.2265728
+  let Rlat = -6.805913599999999
+  let Rlng = 39.233126399999996
 
   let utm = new utmObj()
 
