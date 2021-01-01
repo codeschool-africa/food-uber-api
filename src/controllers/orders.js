@@ -17,6 +17,8 @@ exports.placeOrder = async (req, res) => {
 
   let notify = `insert into notifications values (id,?,?,?,0)`
 
+  // console.log(location, foods, orderedBy)
+
   let data = JSON.parse(location)
 
   let { lat, lng } = data
@@ -73,7 +75,8 @@ exports.placeOrder = async (req, res) => {
         if (output && output.insertId) {
           // check for the order in the database
           let orderCheck = `select * from orders where id = '${output.insertId}'`
-          let remainPlates = food.plates - availablePlates
+          let remainPlates = availablePlates - food.plates
+          // console.log(remainPlates)
           let updatePlates = `update foods set plates = '${remainPlates}' where id = '${food.id}'`
           db.query(orderCheck, (err, order) => {
             if (err) throw err
@@ -95,6 +98,8 @@ exports.placeOrder = async (req, res) => {
     )
   }
 
+  // console.log(distanceCheck)
+
   if (!errors.isEmpty()) {
     res.json({ errors: errors.array })
   } else {
@@ -105,17 +110,15 @@ exports.placeOrder = async (req, res) => {
         // checks if food is available
         db.query(foodCheck, (err, output) => {
           if (err) throw err
-          if (
-            output &&
-            output.length > 0 &&
-            (output[0].plates < food.plates || output[0].plates === null)
-          ) {
+          // console.log("query stage", output)
+          if (output && output.length > 0 && output[0].plates < food.plates) {
+            // console.log("this plates stage")
             res.json({ msg: `${food.name} not available right now` })
           } else if (
             output &&
             output.length > 0 &&
-            output[0].plates <= food.plates &&
-            output[0].plates !== null
+            output[0].plates >= food.plates
+            // output[0].plates !== null
           ) {
             // checks time
             // console.log(output[0].plates)
@@ -123,8 +126,9 @@ exports.placeOrder = async (req, res) => {
             let deliveryTime = food.delivery_time
             let time = new Date(deliveryTime)
             let hour = parseInt(time.getHours())
+            // console.log("this stage")
             if (hour < 8 || hour > 21) {
-              res.json({ msg: `We are closed during this hours ${time} ` })
+              res.json({ msg: `We are closed during this hours ${hour} ` })
             } else if (8 <= hour <= 21) {
               if (createdAt.getTime() + 1800000 > time.getTime()) {
                 res.json({
