@@ -248,12 +248,13 @@ exports.deleteFood = async (req, res) => {
   let sql = `delete from foods where id = '${req.params.foodId}'`
   let foodIdCheck = `select * from foods where id = '${req.params.foodId}'`
   let decoded
-  if (req.headers && req.headers.authorization) {
-    let authorization = req.headers.authorization
+  console.log(req.headers.authorization)
+  if (req.header && req.header.authorization) {
+    let authorization = req.header.authorization
     decoded = jwt.verify(authorization, process.env.SECRET_TOKEN)
     if (
       (decoded.id && decoded.role === "admin") ||
-      decoded.role === "main-admin"
+      (decoded.id && decoded.role === "main-admin")
     ) {
       db.query(foodIdCheck, (err, output) => {
         if (err) throw err
