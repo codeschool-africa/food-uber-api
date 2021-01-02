@@ -1,1 +1,1 @@
-npm run start:production
+web: node index.js
