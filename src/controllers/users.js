@@ -450,7 +450,6 @@ exports.addAdmin = async (req, res) => {
   let decoded
   let userCheck = `select * from users where id = '${req.params.userId}'`
   let sql = `update users set role = 'admin' where id = '${req.params.userId}'`
-  // console.log(req.headers)
   if (req.headers && req.headers.authorization) {
     let authorization = req.headers.authorization
     decoded = jwt.verify(authorization, process.env.SECRET_TOKEN)
