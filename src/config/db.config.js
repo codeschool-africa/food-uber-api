@@ -5,11 +5,4 @@ const dbConfig = {
   database: "farajafooduber",
 }
 
-// const dbConfig = {
-//   host: "localhost",
-//   user: "root",
-//   password: "",
-//   database: "fooduber",
-// }
-
 module.exports = dbConfig
