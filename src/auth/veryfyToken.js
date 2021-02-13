@@ -8,7 +8,7 @@ module.exports = (req, res, next) => {
       req.user = verified
       next()
     } catch (err) {
-      res.status(400).json({ msg: "Invalid Token" })
+      res.json({ msg: "Invalid Token" })
     }
   } else {
     return res.json({ msg: "Unauthorized" })
